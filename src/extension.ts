@@ -7,6 +7,46 @@ const decorationType = vscode.window.createTextEditorDecorationType({
 	border: '2px solid white',
 })
 
+
+
+function highlight_keyword(
+	x: any,
+	y: any,
+	z: any,
+	i: any,
+	j: any,
+	k: any,
+	p: any,
+	decorationsArray: vscode.DecorationOptions[]
+  ): void {
+	let regex1;
+	if (y == "image" && z == "alt") {
+	  regex1 = /(alt)/;
+	} else if (y == "text" && z == "autocomplete") {
+	  regex1 = /(autocomplete)/;
+	} else if (y == "form" && z == "role") {
+	  regex1 = /(role)/;
+	} else if(y=="html" && z=="lang"){
+		regex1 = /(lang)/
+	}
+	if (x.includes(y)) {
+	  console.log("highlight");
+	  let m1 = x.match(regex1);
+	  if (m1 !== null && m1.index !== undefined) {
+		// console.log(src_code[i]);
+	  } else {
+		let range = new vscode.Range(
+		  new vscode.Position(i, j),
+		  new vscode.Position(i, j + k)
+		);
+		let decoration = { range };
+  
+		decorationsArray.push(decoration);
+	  }
+	}
+  }
+  
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -30,108 +70,122 @@ export function activate(context: vscode.ExtensionContext) {
 				
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
+
+		let keywords = ["<input","<a","<form","<html","<div","<label"]
+
+		for(var x in keywords){
+			console.log(keywords[x])
+		}
+
 		vscode.workspace.openTextDocument(active.document.uri);
 
 		let result=active.document.getText();
 
-		let regex1 = /(<input)/
-		let regex2 = /(<a)/
-		let regex3 = /(<html)/
-
+		let regex
+		let match_keyword
 		let decorationsArray: vscode.DecorationOptions[] = [];
 
 		const src_code = result.split('\n');
 		
 		for(let i=0;i<src_code.length;i++){
+			for(let j=0;j<keywords.length;j++){
+				if(src_code[i].includes(keywords[j])){
+					if(j == 0){
+						regex = /(input)/
+						match_keyword = src_code[i].match(regex)
+						if(match_keyword !==null && match_keyword.index !== undefined){
 
-			let match1 = src_code[i].match(regex1);
-			let match2 = src_code[i].match(regex2);
-			let match3 = src_code[i].match(regex3)
+							let s1 = src_code[i].substring(
+								match_keyword.index + match_keyword[1].length
+							  );
+							  var ind1 = s1.indexOf("type=");
+							  ind1 = ind1 + 4;
+							  if (s1.substring(ind1).includes("image")) {
+								highlight_keyword(
+								  s1.substring(ind1),
+								  "image",
+								  "alt",
+								  i,
+								  match_keyword.index,
+								  match_keyword[1].length,
+								  1,
+								  decorationsArray
+								);
+							  }
 
-			if(match1 !==null && match1.index!== undefined){
-				//console.log(src_code[i]);
-				let regex1=/(alt)/
-				let m1 = src_code[i].match(regex1);
-
-				if(m1!==null && m1.index!==undefined)
-				{
-					console.log(src_code[i]);
-				}
-				else{
-					let range = new vscode.Range(
-						new vscode.Position(i,match1.index),
-						new vscode.Position(i,match1.index + match1[1].length)
-					)
-					let decoration = {range}
-
-					decorationsArray.push(decoration)
-					vscode.languages.registerHoverProvider('javascript', {
-						provideHover(document,position,token){
-							const range = document.getWordRangeAtPosition(position);
-            				const word = document.getText(range);
-
-            				if (word == "HELLO") {
-
-                				return new vscode.Hover({
-                   				 language: "Hello language",
-                   				 value: "Hello Value"
-               		 			});
-            				}
-						}	
-					});
-				}
-			}
-
-			if(match2 != null && match2.index!== undefined){
-				console.log(src_code[i]);
-				let regex1=/(a>)/
-				let m2 = src_code[i].match(regex1);
-
-				if(m2!=null && m2.index!==undefined)
-				{
-					let x = m2.index
-					let y = match2.index + match2[1].length
-
-					let s1 = src_code[i].substring(y,x)
-					let regex_a = /(>)/
-					let ma = s1.match(regex_a);
-					if(ma!=null && ma.index!==undefined){
-						let z=ma.index
-						s1=s1.substring(z+1,x)
+							  if (s1.substring(ind1).includes("text")) {
+								highlight_keyword(
+								  s1.substring(ind1),
+								  "text",
+								  "autocomplete",
+								  i,
+								  match_keyword.index,
+								  match_keyword[1].length,
+								  1,
+								  decorationsArray
+								);
+							  }
+						}
 					}
-					console.log(s1)
-					if(s1.length-2 == 0){
-						let range = new vscode.Range(
-							new vscode.Position(i,match2.index),
-							new vscode.Position(i,match2.index + match2[1].length)
-						)
-						let decoration = {range}
+					if(j==1){
+						regex = /(<a)/
+						match_keyword = src_code[i].match(regex);
+						if(match_keyword != null && match_keyword.index!== undefined){
+							let regex1=/(a>)/
+							let m2 = src_code[i].match(regex1);
+			
+							if(m2!=null && m2.index!==undefined)
+							{
+								let x = m2.index
+								let y = match_keyword.index + match_keyword[1].length
+			
+								let s1 = src_code[i].substring(y,x)
+								let regex_a = /(>)/
+								let ma = s1.match(regex_a);
+								if(ma!=null && ma.index!==undefined){
+									let z=ma.index
+									s1=s1.substring(z+1,x)
+								}
+								console.log(s1)
+								if(s1.length-2 == 0){
+									let range = new vscode.Range(
+										new vscode.Position(i,match_keyword.index),
+										new vscode.Position(i,match_keyword.index + match_keyword[1].length)
+									)
+									let decoration = {range}
+			
+									decorationsArray.push(decoration)
+								}
+			
+							}
+			
+						}
 
-						decorationsArray.push(decoration)
+
 					}
-
-				}
-
+					if(j==3){
+						regex = /(<html)/
+						match_keyword = src_code[i].match(regex)
+						if(match_keyword != null && match_keyword.index!== undefined){
+							let s1 = src_code[i].substring(
+								match_keyword.index + match_keyword[1].length
+							  );
+							highlight_keyword(
+								src_code[i],
+								"html",
+								"lang",
+								i,
+								match_keyword.index,
+								match_keyword[1].length,
+								1,
+								decorationsArray
+							  );
+					}
+					
 			}
-			if(match3 != null && match3.index!== undefined){
-				console.log(src_code[i]);
-				let regl=/(lang)/
-				let ml = src_code[i].match(regl);
-
-				if(ml!=null && ml.index!==undefined)	// lang found
-				{
-
-				}
-				else{		// not found highlight
-					let range = new vscode.Range(
-						new vscode.Position(i,match3.index),
-						new vscode.Position(i,match3.index + match3[1].length)
-					)
-					let decoration = {range}
-
-					decorationsArray.push(decoration)
-				}
-		}
+			
+	}
+	}
 		}
 		active.setDecorations(decorationType, decorationsArray)
 		console.log(result);
@@ -140,21 +194,6 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(disposable);
-
-	// let hover = vscode.languages.registerHoverProvider('type script', {
-	// 	provideHover(document, position, token) {
-	// 		const range = document.getWordRangeAtPosition(position);
-    //         const word = document.getText(range);
-
-    //         if (word == "HELLO") {
-
-    //             return new vscode.Hover({
-    //                 language: "Hello language",
-    //                 value: "Hello Value"
-    //             });
-    //         }
-	// 	}
-	//   });
 
 }
 
