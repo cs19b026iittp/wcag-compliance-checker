@@ -1,5 +1,5 @@
 {
-  "name": "wcag-ext",
+	"name": "wcag-ext",
 	"displayName": "wcag-ext",
 	"description": "",
 	"version": "0.0.1",
@@ -10,7 +10,7 @@
 		"Other"
 	],
 	"activationEvents": [
-        "onCommand:wcag-ext.helloWorld"
+		"onCommand:wcag-ext.helloWorld"
 	],
 	"main": "./out/extension.js",
 	"contributes": {

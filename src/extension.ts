@@ -29,6 +29,9 @@ function highlight_keyword(
 	} else if(y=="html" && z=="lang"){
 		regex1 = /(lang)/
 	}
+	else if(y=="nav" && z=="aria-label"){
+		regex1 = /(aria-label)/
+	}
 	if (x.includes(y)) {
 	  console.log("highlight");
 	  let m1 = x.match(regex1);
@@ -71,7 +74,7 @@ export function activate(context: vscode.ExtensionContext) {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
 
-		let keywords = ["<input","<a","<form","<html","<div","<label"]
+		let keywords = ["<input","<a","<form","<html","<div","<label","<nav"]
 
 		for(var x in keywords){
 			console.log(keywords[x])
@@ -180,10 +183,29 @@ export function activate(context: vscode.ExtensionContext) {
 								1,
 								decorationsArray
 							  );
-					}
-					
-			}
+					    }
 			
+		           	}
+				
+				if(j==6){
+					regex = /(<nav)/
+					match_keyword = src_code[i].match(regex)
+					if(match_keyword != null && match_keyword.index!== undefined){
+						let s1 = src_code[i].substring(
+							match_keyword.index + match_keyword[1].length
+						  );
+						highlight_keyword(
+							src_code[i],
+							"nav",
+							"aria-label",
+							i,
+							match_keyword.index,
+							match_keyword[1].length,
+							1,
+							decorationsArray
+						  );
+						}
+					}
 	}
 	}
 		}
