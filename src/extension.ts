@@ -1,11 +1,13 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+import { off } from 'process';
+import { cursorTo } from 'readline';
 import * as vscode from 'vscode';
 
 const decorationType = vscode.window.createTextEditorDecorationType({
 	backgroundColor:'green',
 	border: '2px solid white',
-})
+});
 
 
 
@@ -28,6 +30,9 @@ function highlight_keyword(
 	  regex1 = /(role)/;
 	} else if(y=="html" && z=="lang"){
 		regex1 = /(lang)/
+	} else if(y=="label" && z=="for")
+	{
+		regex1=/(for)/
 	}
 	else if(y=="nav" && z=="aria-label"){
 		regex1 = /(aria-label)/
@@ -74,18 +79,18 @@ export function activate(context: vscode.ExtensionContext) {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
 
-		let keywords = ["<input","<a","<form","<html","<div","<label","<nav"]
+		let keywords = ["<input","<a","<form","<html","<div","<label","<nav","<head"]
 
 		for(var x in keywords){
-			console.log(keywords[x])
+			console.log(keywords[x]);
 		}
 
 		vscode.workspace.openTextDocument(active.document.uri);
 
 		let result=active.document.getText();
 
-		let regex
-		let match_keyword
+		let regex;
+		let match_keyword;
 		let decorationsArray: vscode.DecorationOptions[] = [];
 
 		const src_code = result.split('\n');
@@ -94,19 +99,22 @@ export function activate(context: vscode.ExtensionContext) {
 			for(let j=0;j<keywords.length;j++){
 				if(src_code[i].includes(keywords[j])){
 					if(j == 0){
-						regex = /(input)/
+						regex = /(<input)/
 						match_keyword = src_code[i].match(regex)
 						if(match_keyword !==null && match_keyword.index !== undefined){
 
 							let s1 = src_code[i].substring(
 								match_keyword.index + match_keyword[1].length
 							  );
+							  console.log(s1);
 							  var ind1 = s1.indexOf("type=");
-							  ind1 = ind1 + 4;
+							  ind1 = ind1 + 5;
 							  if (s1.substring(ind1).includes("image")) {
 								highlight_keyword(
-								  s1.substring(ind1),
+									src_code[i],
+								//   s1.substring(ind1),
 								  "image",
+
 								  "alt",
 								  i,
 								  match_keyword.index,
@@ -184,10 +192,11 @@ export function activate(context: vscode.ExtensionContext) {
 								decorationsArray
 							  );
 					    }
+
 			
 		           	}
 				
-				if(j==6){
+				 if(j==6){
 					regex = /(<nav)/
 					match_keyword = src_code[i].match(regex)
 					if(match_keyword != null && match_keyword.index!== undefined){
@@ -206,16 +215,121 @@ export function activate(context: vscode.ExtensionContext) {
 						  );
 						}
 					}
+
+
+					if(j==7){
+						regex = /(<head)/
+						match_keyword = src_code[i].match(regex)
+						if(match_keyword != null && match_keyword.index!== undefined){
+							let regex1 = /(<title)/
+							let regex3=/(head>)/
+							for(let w=i;w<src_code.length;w++){
+								console.log(w)
+								console.log("title")
+								let m_title = src_code[w].match(regex1)
+								
+								if(m_title!=null && m_title.index!==undefined){
+
+								}
+								else{
+									let m_head_end = src_code[w].match(regex3)
+									if(m_head_end!=null && m_head_end!==undefined){
+										break;
+									}
+									else{
+									let range = new vscode.Range(
+										new vscode.Position(i,match_keyword.index),
+										new vscode.Position(i,match_keyword.index + match_keyword[1].length)
+									)
+									let decoration = {range}
+			
+									decorationsArray.push(decoration)
+									}
+									
+								}
+
+							}
+						}
+					}
+
+						
+				 
+					if(j==5)
+					{
+						regex = /(<label)/
+						match_keyword = src_code[i].match(regex)
+						if(match_keyword != null && match_keyword.index!== undefined){
+							let s1 = src_code[i].substring(
+								match_keyword.index + match_keyword[1].length
+							  );
+							highlight_keyword(
+								src_code[i],
+								"label",
+								"for",
+								i,
+								match_keyword.index,
+								match_keyword[1].length,
+								1,
+								decorationsArray
+							  );
+					    }
+					}
+				} 
+	    }
+
 	}
-	}
-		}
+
 		active.setDecorations(decorationType, decorationsArray)
 		console.log(result);
-
+     
 		vscode.window.showInformationMessage('Hello World from wcag-ext!');
 	});
 
 	context.subscriptions.push(disposable);
+
+	vscode.languages.registerHoverProvider('html', {
+		provideHover(document, position, token) {
+
+			const range = document.getWordRangeAtPosition(position);
+            const word = document.getText(range);
+
+            if (word == "input") {
+
+				return {
+					contents: ["Include alt tag while using input tag"],
+				  }
+            }
+			else if( word=="form")
+			{
+				return{
+					   contents:["Include lang attribute for ease of change from one to another language "],
+					
+				}
+			}
+			else if( word=="label")
+			{
+				return{
+					   contents:["use for attribute in label tag to represent id attribue in input tag "],
+					
+				}
+			}
+			else if (word == "nav"){
+				return{
+					contents:["attach an aria-label attribute to your navigation to give users of assistive technology as much information as possible"]
+				}
+			}
+			else if (word == "head"){
+				return{
+					contents:["Using a Title is suggested as its gives better information about the data"]
+				}
+			}
+
+			return {
+				contents:[],
+			}
+	
+		}
+	  });
 
 }
 
