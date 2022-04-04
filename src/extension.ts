@@ -1,12 +1,13 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+import { cursorTo } from 'readline';
 import * as vscode from 'vscode';
 import { TSMap } from "typescript-map"
 
 const decorationType = vscode.window.createTextEditorDecorationType({
 	backgroundColor:'green',
 	border: '2px solid white',
-})
+});
 
 
 
@@ -31,6 +32,9 @@ function highlight_keyword(		// for highlighting the keyword
 	  regex1 = /(role)/;
 	} else if(y=="html" && z=="lang"){
 		regex1 = /(lang)/
+	} else if(y=="label" && z=="for")
+	{
+		regex1=/(for)/
 	}
 	if (x.includes(y)) {
 	  console.log("highlight");
@@ -66,12 +70,17 @@ export function activate(context: vscode.ExtensionContext) {
 		let keywords = ["<input","<a","<form","<html","<div","<label"]  // keyword to check 
 
 
+		for(var x in keywords){
+			console.log(keywords[x]);
+		}
+
+
 		vscode.workspace.openTextDocument(active.document.uri);  // opening the active document
 
 		let result=active.document.getText();
 
-		let regex
-		let match_keyword
+		let regex;
+		let match_keyword;
 		let decorationsArray: vscode.DecorationOptions[] = [];
 
 		const src_code = result.split('\n');
@@ -80,20 +89,25 @@ export function activate(context: vscode.ExtensionContext) {
 		for(let i=0;i<src_code.length;i++){   
 			for(let j=0;j<keywords.length;j++){
 				if(src_code[i].includes(keywords[j])){
-					if(j == 0){		// checking for the input tag
-						regex = /(input)/
+
+					if(j == 0){
+						regex = /(<input)/
 						match_keyword = src_code[i].match(regex)
 						if(match_keyword !==null && match_keyword.index !== undefined){
 
 							let s1 = src_code[i].substring(
 								match_keyword.index + match_keyword[1].length
 							  );
+							  console.log(s1);
 							  var ind1 = s1.indexOf("type=");
-							  ind1 = ind1 + 4;
-							  if (s1.substring(ind1).includes("image")) {  // for highlighting if the type is image
+
+							  ind1 = ind1 + 5;
+							  if (s1.substring(ind1).includes("image")) {
 								highlight_keyword(
-								  s1.substring(ind1),
+									src_code[i],
+								//   s1.substring(ind1),
 								  "image",
+
 								  "alt",
 								  i,
 								  match_keyword.index,
@@ -192,43 +206,76 @@ export function activate(context: vscode.ExtensionContext) {
 								1,
 								decorationsArray
 							  );
+					    }
+						
+			        }
+					if(j==5)
+					{
+						regex = /(<label)/
+						match_keyword = src_code[i].match(regex)
+						if(match_keyword != null && match_keyword.index!== undefined){
+							let s1 = src_code[i].substring(
+								match_keyword.index + match_keyword[1].length
+							  );
+							highlight_keyword(
+								src_code[i],
+								"label",
+								"for",
+								i,
+								match_keyword.index,
+								match_keyword[1].length,
+								1,
+								decorationsArray
+							  );
+					    }
 					}
-					
-			}
 			
+	    }
 	}
-	}
-		}
-		// console.log("set decorations")
-		active.setDecorations(decorationType, decorationsArray)  // setting the decorations
-		//console.log(result);
 
+}
+		active.setDecorations(decorationType, decorationsArray)
+		console.log(result);
+     
 		vscode.window.showInformationMessage('Hello World from wcag-ext!');
 	});
 
 	context.subscriptions.push(disposable);
 
-	// console.log("abcdef")
+
 	vscode.languages.registerHoverProvider('html', {
 		provideHover(document, position, token) {
 
-			let r = document.getWordRangeAtPosition(position);
-			let w = document.getText(r);
-			if(w=="input"){
+			const range = document.getWordRangeAtPosition(position);
+            const word = document.getText(range);
+
+            if (word == "input") {
+
+				return {
+					contents: ["Include alt tag while using input tag"],
+				  }
+            }
+			else if( word=="form")
+			{
 				return{
-					contents:["enter alt tag"],
+					   contents:["Include lang attribute for ease of change from one to another language "],
+					
 				}
 			}
-			else if(w=="form"){
+			else if( word=="label")
+			{
 				return{
-					contents:["enter role"]
+					   contents:["use for attribute in label tag to represent id attribue in input tag "],
+					
 				}
 			}
-			return{
-				contents : [],
-			};
+			return {
+				contents:[],
+			}
+	
 		}
-		});
+	  });
+
 
 }
 
