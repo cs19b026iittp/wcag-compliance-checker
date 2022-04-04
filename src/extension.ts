@@ -3,6 +3,7 @@
 import { off } from 'process';
 import { cursorTo } from 'readline';
 import * as vscode from 'vscode';
+import { TSMap } from "typescript-map"
 
 const decorationType = vscode.window.createTextEditorDecorationType({
 	backgroundColor:'green',
@@ -11,7 +12,7 @@ const decorationType = vscode.window.createTextEditorDecorationType({
 
 
 
-function highlight_keyword(
+function highlight_keyword(		// for highlighting the keyword
 	x: any,
 	y: any,
 	z: any,
@@ -19,14 +20,16 @@ function highlight_keyword(
 	j: any,
 	k: any,
 	p: any,
-	decorationsArray: vscode.DecorationOptions[]
+	decorationsArray: vscode.DecorationOptions[]  // to store the elements for decoration
   ): void {
 	let regex1;
-	if (y == "image" && z == "alt") {
+	if (y == "image" && z == "alt") {	// highlight input if alt is not present
 	  regex1 = /(alt)/;
-	} else if (y == "text" && z == "autocomplete") {
+	} else if (y == "text" && z == "autocomplete") {  // highlight the input of text type if autocomplete is not enabled
 	  regex1 = /(autocomplete)/;
-	} else if (y == "form" && z == "role") {
+	} 
+	// highlight form tag if the role is nt assigned
+	else if (y == "form" && z == "role") {
 	  regex1 = /(role)/;
 	} else if(y=="html" && z=="lang"){
 		regex1 = /(lang)/
@@ -49,7 +52,8 @@ function highlight_keyword(
 		);
 		let decoration = { range };
   
-		decorationsArray.push(decoration);
+		decorationsArray.push(decoration);  // adding elements to the decoraton array
+
 	  }
 	}
   }
@@ -63,21 +67,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 		if(!active)
 			return;
-
-	
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "wcag-ext" is now active!');
 
-	
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
 	let disposable = vscode.commands.registerCommand('wcag-ext.helloWorld', () => {
-				
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
 
 		let keywords = ["<input","<a","<form","<html","<div","<label","<nav","<head"]
 
@@ -85,7 +77,8 @@ export function activate(context: vscode.ExtensionContext) {
 			console.log(keywords[x]);
 		}
 
-		vscode.workspace.openTextDocument(active.document.uri);
+
+		vscode.workspace.openTextDocument(active.document.uri);  // opening the active document
 
 		let result=active.document.getText();
 
@@ -95,9 +88,11 @@ export function activate(context: vscode.ExtensionContext) {
 
 		const src_code = result.split('\n');
 		
-		for(let i=0;i<src_code.length;i++){
+		// console.log("hii")
+		for(let i=0;i<src_code.length;i++){   
 			for(let j=0;j<keywords.length;j++){
 				if(src_code[i].includes(keywords[j])){
+
 					if(j == 0){
 						regex = /(<input)/
 						match_keyword = src_code[i].match(regex)
@@ -108,6 +103,7 @@ export function activate(context: vscode.ExtensionContext) {
 							  );
 							  console.log(s1);
 							  var ind1 = s1.indexOf("type=");
+
 							  ind1 = ind1 + 5;
 							  if (s1.substring(ind1).includes("image")) {
 								highlight_keyword(
@@ -124,7 +120,7 @@ export function activate(context: vscode.ExtensionContext) {
 								);
 							  }
 
-							  if (s1.substring(ind1).includes("text")) {
+							  if (s1.substring(ind1).includes("text")) { // highlighting the input 
 								highlight_keyword(
 								  s1.substring(ind1),
 								  "text",
@@ -139,8 +135,10 @@ export function activate(context: vscode.ExtensionContext) {
 						}
 					}
 					if(j==1){
+						// checking the compliance for the anchor tag
 						regex = /(<a)/
 						match_keyword = src_code[i].match(regex);
+						// start of anchor tag found
 						if(match_keyword != null && match_keyword.index!== undefined){
 							let regex1=/(a>)/
 							let m2 = src_code[i].match(regex1);
@@ -174,7 +172,31 @@ export function activate(context: vscode.ExtensionContext) {
 
 
 					}
+					if(j==2){
+						// checking the compliance for the form tag
+						regex = /(<form)/
+						match_keyword = src_code[i].match(regex)
+						if(match_keyword != null && match_keyword.index!== undefined){
+							let s1 = src_code[i].substring(
+								match_keyword.index + match_keyword[1].length
+							  );
+							  // checking if the role is included or not
+
+							highlight_keyword(
+								src_code[i],
+								"form",
+								"role",
+								i,
+								match_keyword.index,
+								match_keyword[1].length,
+								1,
+								decorationsArray
+							  );
+					}
+					}
 					if(j==3){
+						
+						// for chrcking the compliance wrt html tag
 						regex = /(<html)/
 						match_keyword = src_code[i].match(regex)
 						if(match_keyword != null && match_keyword.index!== undefined){
@@ -197,6 +219,7 @@ export function activate(context: vscode.ExtensionContext) {
 		           	}
 				
 				 if(j==6){
+					 // checking compliance for the nav tag
 					regex = /(<nav)/
 					match_keyword = src_code[i].match(regex)
 					if(match_keyword != null && match_keyword.index!== undefined){
@@ -218,6 +241,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 
 					if(j==7){
+						// checking if the page has the title
 						regex = /(<head)/
 						match_keyword = src_code[i].match(regex)
 						if(match_keyword != null && match_keyword.index!== undefined){
@@ -287,23 +311,24 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(disposable);
 
+	// for hovering message st the keywords
 	vscode.languages.registerHoverProvider('html', {
 		provideHover(document, position, token) {
 
 			const range = document.getWordRangeAtPosition(position);
             const word = document.getText(range);
-
+			// for the alt tag presence
             if (word == "input") {
 
 				return {
 					contents: ["Include alt tag while using input tag"],
 				  }
             }
+			// message to appear for the form tag
 			else if( word=="form")
 			{
 				return{
-					   contents:["Include lang attribute for ease of change from one to another language "],
-					
+					   contents:["Include role"]
 				}
 			}
 			else if( word=="label")
@@ -330,6 +355,7 @@ export function activate(context: vscode.ExtensionContext) {
 	
 		}
 	  });
+
 
 }
 
