@@ -5,6 +5,8 @@ import { cursorTo } from 'readline';
 import * as vscode from 'vscode';
 import { TSMap } from "typescript-map"
 
+let decorationsArray: vscode.DecorationOptions[] = [];
+
 const decorationType = vscode.window.createTextEditorDecorationType({
 	backgroundColor:'green',
 	border: '2px solid white',
@@ -31,7 +33,13 @@ function highlight_keyword(		// for highlighting the keyword
 	// highlight form tag if the role is nt assigned
 	else if (y == "form" && z == "role") {
 	  regex1 = /(role)/;
-	} else if(y=="html" && z=="lang"){
+	} 
+	// checking for the presence of action in case of form
+	else if(y=="form" && z=="action"){
+		regex1=/(action)/
+	}
+	// checking for the presence of lang in case of html tag
+	else if(y=="html" && z=="lang"){
 		regex1 = /(lang)/
 	} else if(y=="label" && z=="for")
 	{
@@ -63,14 +71,17 @@ function highlight_keyword(		// for highlighting the keyword
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 	
+	// getting the active text editor
 	const active = vscode.window.activeTextEditor;
 
+	// no active editor
 		if(!active)
 			return;
 	console.log('Congratulations, your extension "wcag-ext" is now active!');
 
 	let disposable = vscode.commands.registerCommand('wcag-ext.helloWorld', () => {
 
+		// keywords to check for
 		let keywords = ["<input","<a","<form","<html","<div","<label","<nav","<head"]
 
 		for(var x in keywords){
@@ -80,12 +91,14 @@ export function activate(context: vscode.ExtensionContext) {
 
 		vscode.workspace.openTextDocument(active.document.uri);  // opening the active document
 
+		// to get the content of the file
 		let result=active.document.getText();
 
 		let regex;
 		let match_keyword;
-		let decorationsArray: vscode.DecorationOptions[] = [];
+		
 
+		// splitting the code line by line
 		const src_code = result.split('\n');
 		
 		// console.log("hii")
@@ -186,6 +199,17 @@ export function activate(context: vscode.ExtensionContext) {
 								src_code[i],
 								"form",
 								"role",
+								i,
+								match_keyword.index,
+								match_keyword[1].length,
+								1,
+								decorationsArray
+							  );
+
+							  highlight_keyword(
+								src_code[i],
+								"form",
+								"action",
 								i,
 								match_keyword.index,
 								match_keyword[1].length,
@@ -318,6 +342,8 @@ export function activate(context: vscode.ExtensionContext) {
 			const range = document.getWordRangeAtPosition(position);
             const word = document.getText(range);
 			// for the alt tag presence
+			console.log(position)
+			
             if (word == "input") {
 
 				return {
