@@ -1,5 +1,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+import { off } from 'process';
 import { cursorTo } from 'readline';
 import * as vscode from 'vscode';
 import { TSMap } from "typescript-map"
@@ -36,6 +37,9 @@ function highlight_keyword(		// for highlighting the keyword
 	{
 		regex1=/(for)/
 	}
+	else if(y=="nav" && z=="aria-label"){
+		regex1 = /(aria-label)/
+	}
 	if (x.includes(y)) {
 	  console.log("highlight");
 	  let m1 = x.match(regex1);
@@ -66,9 +70,8 @@ export function activate(context: vscode.ExtensionContext) {
 	console.log('Congratulations, your extension "wcag-ext" is now active!');
 
 	let disposable = vscode.commands.registerCommand('wcag-ext.helloWorld', () => {
-		
-		let keywords = ["<input","<a","<form","<html","<div","<label"]  // keyword to check 
 
+		let keywords = ["<input","<a","<form","<html","<div","<label","<nav","<head"]
 
 		for(var x in keywords){
 			console.log(keywords[x]);
@@ -170,12 +173,15 @@ export function activate(context: vscode.ExtensionContext) {
 
 					}
 					if(j==2){
+						// checking the compliance for the form tag
 						regex = /(<form)/
 						match_keyword = src_code[i].match(regex)
 						if(match_keyword != null && match_keyword.index!== undefined){
 							let s1 = src_code[i].substring(
 								match_keyword.index + match_keyword[1].length
 							  );
+							  // checking if the role is included or not
+
 							highlight_keyword(
 								src_code[i],
 								"form",
@@ -189,6 +195,7 @@ export function activate(context: vscode.ExtensionContext) {
 					}
 					}
 					if(j==3){
+						
 						// for chrcking the compliance wrt html tag
 						regex = /(<html)/
 						match_keyword = src_code[i].match(regex)
@@ -207,8 +214,70 @@ export function activate(context: vscode.ExtensionContext) {
 								decorationsArray
 							  );
 					    }
+
+			
+		           	}
+				
+				 if(j==6){
+					 // checking compliance for the nav tag
+					regex = /(<nav)/
+					match_keyword = src_code[i].match(regex)
+					if(match_keyword != null && match_keyword.index!== undefined){
+						let s1 = src_code[i].substring(
+							match_keyword.index + match_keyword[1].length
+						  );
+						highlight_keyword(
+							src_code[i],
+							"nav",
+							"aria-label",
+							i,
+							match_keyword.index,
+							match_keyword[1].length,
+							1,
+							decorationsArray
+						  );
+						}
+					}
+
+
+					if(j==7){
+						// checking if the page has the title
+						regex = /(<head)/
+						match_keyword = src_code[i].match(regex)
+						if(match_keyword != null && match_keyword.index!== undefined){
+							let regex1 = /(<title)/
+							let regex3=/(head>)/
+							for(let w=i;w<src_code.length;w++){
+								console.log(w)
+								console.log("title")
+								let m_title = src_code[w].match(regex1)
+								
+								if(m_title!=null && m_title.index!==undefined){
+
+								}
+								else{
+									let m_head_end = src_code[w].match(regex3)
+									if(m_head_end!=null && m_head_end!==undefined){
+										break;
+									}
+									else{
+									let range = new vscode.Range(
+										new vscode.Position(i,match_keyword.index),
+										new vscode.Position(i,match_keyword.index + match_keyword[1].length)
+									)
+									let decoration = {range}
+			
+									decorationsArray.push(decoration)
+									}
+									
+								}
+
+							}
+						}
+					}
+
 						
-			        }
+				 
 					if(j==5)
 					{
 						regex = /(<label)/
@@ -229,11 +298,11 @@ export function activate(context: vscode.ExtensionContext) {
 							  );
 					    }
 					}
-			
+				} 
 	    }
+
 	}
 
-}
 		active.setDecorations(decorationType, decorationsArray)
 		console.log(result);
      
@@ -242,24 +311,24 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(disposable);
 
-
+	// for hovering message st the keywords
 	vscode.languages.registerHoverProvider('html', {
 		provideHover(document, position, token) {
 
 			const range = document.getWordRangeAtPosition(position);
             const word = document.getText(range);
-
+			// for the alt tag presence
             if (word == "input") {
 
 				return {
 					contents: ["Include alt tag while using input tag"],
 				  }
             }
+			// message to appear for the form tag
 			else if( word=="form")
 			{
 				return{
-					   contents:["Include lang attribute for ease of change from one to another language "],
-					
+					   contents:["Include role"]
 				}
 			}
 			else if( word=="label")
@@ -269,6 +338,17 @@ export function activate(context: vscode.ExtensionContext) {
 					
 				}
 			}
+			else if (word == "nav"){
+				return{
+					contents:["attach an aria-label attribute to your navigation to give users of assistive technology as much information as possible"]
+				}
+			}
+			else if (word == "head"){
+				return{
+					contents:["Using a Title is suggested as its gives better information about the data"]
+				}
+			}
+
 			return {
 				contents:[],
 			}
