@@ -89,7 +89,7 @@ Over view:-
   
   
   
-  Working Procedure
+ Working Procedure
  ===============================
   If the user runs the vscode extension alongside with his/her html code
   
@@ -105,6 +105,14 @@ Over view:-
  ============================
  G Pavan Sahith, M Yethin Chandra Sai, K Pavan Kalyan, V Jaswanth, Gagan Hedge
  cs19b017,cs19b026,cs19b022,cs19b042,cs19b015
+ 
+ Installation process
+ =============================
+ clone the git repository
+ run npm i in your vscode to install the nodemodules
+ debug the code 
+ In the new vscode code editor write your code -> ctrl+shift+p to run the extension
+ It will highlight the tags that violate the wcag compliance & displays the message on hover over the particular tag.
  
  Future Implementations
 ============================
