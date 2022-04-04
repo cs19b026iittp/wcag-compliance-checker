@@ -320,7 +320,7 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 			else if (word == "head"){
 				return{
-					contents:["Using a Title is suggested as its gives better information about the data"]
+					contents:["Using a Title is suggested as it gives better information about the data"]
 				}
 			}
 
