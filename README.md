@@ -109,7 +109,7 @@ Over view:-
  Installation process
  =============================
  clone the git repository
- run npm i in your vscode to install the nodemodules
+ run npm i in your vscode to install the node modules
  debug the code 
  In the new vscode code editor write your code -> ctrl+shift+p to run the extension
  It will highlight the tags that violate the wcag compliance & displays the message on hover over the particular tag.
