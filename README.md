@@ -103,7 +103,7 @@ Over view:-
  
  Our Team
  ============================
- G Pavan Sahith, M Yethin Chandra Sai, K Pavan Kalyan, V Jaswanth, Gagan Hedge
+ G Pavan Sahith, M Yethin Chandra Sai, K Pavan Kalyan, V Jaswanth, Gagan Hegde
  cs19b017,cs19b026,cs19b022,cs19b042,cs19b015
  
  Installation process
