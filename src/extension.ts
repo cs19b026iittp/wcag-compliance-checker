@@ -12,7 +12,46 @@ const decorationType = vscode.window.createTextEditorDecorationType({
 	border: '2px solid white',
 });
 
+let src_code ;
 
+function check_input(i:any,j:any){
+	
+}
+
+function highlight_keyword1(
+	x: any,
+	y: any,
+	z: any,
+	t: any,
+	i: any,
+	i1:any,
+	j: any,
+	k: any,
+	p: any,
+	decorationsArray: vscode.DecorationOptions[]
+) : void{
+	let regex1;
+	if (y == "image" && z == "alt") {	// highlight input if alt is not present
+	  regex1 = /(alt)/;
+	}
+
+	for(var a=i;a<=i1;a++) {
+		console.log("highlight");
+		let m1 = x[a].match(regex1);
+		if (m1 !== null && m1.index !== undefined) {
+		  // console.log(src_code[i]);
+		} else {
+		  let range = new vscode.Range(
+			new vscode.Position(t, j),
+			new vscode.Position(t, j + k)
+		  );
+		  let decoration = { range };
+	
+		  decorationsArray.push(decoration);  // adding elements to the decoraton array
+  
+		}
+	  }
+}
 
 function highlight_keyword(		// for highlighting the keyword
 	x: any,
@@ -99,7 +138,7 @@ export function activate(context: vscode.ExtensionContext) {
 		
 
 		// splitting the code line by line
-		const src_code = result.split('\n');
+		src_code = result.split('\n');
 		
 		// console.log("hii")
 		for(let i=0;i<src_code.length;i++){   
@@ -107,44 +146,95 @@ export function activate(context: vscode.ExtensionContext) {
 				if(src_code[i].includes(keywords[j])){
 
 					if(j == 0){
+						
 						regex = /(<input)/
 						match_keyword = src_code[i].match(regex)
 						if(match_keyword !==null && match_keyword.index !== undefined){
-
+							let end_index=i;
+							for(var k=i;k<src_code.length;k++){		// for finding the closing tag
+								console.log(src_code[k]);
+								if(src_code[k].includes("/>")){
+									console.log(k);
+									end_index=k;
+									break;
+								}
+							}
+							console.log(end_index);
 							let s1 = src_code[i].substring(
 								match_keyword.index + match_keyword[1].length
 							  );
 							  console.log(s1);
-							  var ind1 = s1.indexOf("type=");
 
-							  ind1 = ind1 + 5;
-							  if (s1.substring(ind1).includes("image")) {
-								highlight_keyword(
-									src_code[i],
-								//   s1.substring(ind1),
-								  "image",
-
-								  "alt",
-								  i,
-								  match_keyword.index,
-								  match_keyword[1].length,
-								  1,
-								  decorationsArray
-								);
+							//   var flag1=0;
+							  let type_index = i;
+							  for(k=i;k<=end_index;k++){
+								  if(src_code[k].includes("type=")){
+							  		type_index=k;
+									break;
+								  }
 							  }
 
-							  if (s1.substring(ind1).includes("text")) { // highlighting the input 
-								highlight_keyword(
-								  s1.substring(ind1),
-								  "text",
-								  "autocomplete",
-								  i,
-								  match_keyword.index,
-								  match_keyword[1].length,
-								  1,
-								  decorationsArray
-								);
+							  for(var a=type_index;a<=end_index;a++){
+								  if(src_code[a].includes("image")){
+									  
+									  highlight_keyword1(
+										src_code,
+										"image",
+										"alt",
+										i,
+										a,
+										end_index,
+										match_keyword.index,
+										match_keyword[1].length,
+										1,
+										decorationsArray
+									  );
+								  }
+								  else if(src_code[a].includes("text")){
+									  
+									highlight_keyword1(
+									  src_code,
+									  "text",
+									  "autocomplete",
+									  i,
+									  a,
+									  end_index,
+									  match_keyword.index,
+									  match_keyword[1].length,
+									  1,
+									  decorationsArray
+									);
+								}
 							  }
+
+							//   ind1 = ind1 + 5;
+							//   if (s1.substring(ind1).includes("image")) {
+							// 	highlight_keyword(
+							// 		src_code[i],
+							// 	//   s1.substring(ind1),
+							// 	  "image",
+
+							// 	  "alt",
+							// 	  i,
+							// 	  match_keyword.index,
+							// 	  match_keyword[1].length,
+							// 	  1,
+							// 	  decorationsArray
+							// 	);
+							//   }
+
+							//   if (s1.substring(ind1).includes("text")) { // highlighting the input 
+							// 	highlight_keyword(
+							// 	  s1.substring(ind1),
+							// 	  "text",
+							// 	  "autocomplete",
+							// 	  i,
+							// 	  match_keyword.index,
+							// 	  match_keyword[1].length,
+							// 	  1,
+							// 	  decorationsArray
+							// 	);
+							//   }
 						}
 					}
 					if(j==1){
@@ -346,9 +436,19 @@ export function activate(context: vscode.ExtensionContext) {
 			
             if (word == "input") {
 
-				return {
-					contents: ["Include alt tag while using input tag"],
-				  }
+				
+				const markdown = new vscode.MarkdownString('');
+						markdown.appendText("enter alt tag \n");  
+						markdown.appendText("-----------\n");
+						const styled_tag = '<a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input">styletag</a>'
+						markdown.supportHtml = true;
+						const s9 = '<h1>hello</h1>'
+						markdown.appendMarkdown(styled_tag);
+						markdown.appendMarkdown(s9);
+						markdown.isTrusted = true;
+				
+						return new vscode.Hover(markdown, new vscode.Range(position, position));
+
             }
 			// message to appear for the form tag
 			else if( word=="form")
