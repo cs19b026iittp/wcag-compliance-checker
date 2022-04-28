@@ -14,6 +14,7 @@ let remove_decorations: vscode.DecorationOptions[] = [];
 let decorated: number[] = [];
 
 let a_hover="";
+let const_rat="";
 
 const decorationType = vscode.window.createTextEditorDecorationType({
 	// backgroundColor: 'green',
@@ -319,7 +320,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		// const check_css = new CheckCss();
 		// check_css.method1();
 		console.log(":::::::::");
-		let keywords = ["<input", "<a", "<form", "<html", "<nav", "<label", "<div", "<head"]
+		let keywords = ["<input", "<a", "<form", "<html", "<nav", "<label", "<div", "<head", "<button"]
 
 		for (var x in keywords) {
 			console.log(keywords[x]);
@@ -658,6 +659,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 
 					if (j == 5) {
+						
 						regex = /(<label)/
 						match_keyword = src_code[i].match(regex)
 						if (match_keyword != null && match_keyword.index !== undefined) {
@@ -673,6 +675,59 @@ export async function activate(context: vscode.ExtensionContext) {
 							let s1 = src_code[i].substring(
 								match_keyword.index + match_keyword[1].length
 							);
+							highlight_keyword(
+								src_code,
+								"label",
+								"for",
+								i,
+								end_index,
+								match_keyword.index,
+								match_keyword[1].length,
+								1,
+								decorationsArray,
+								active
+							);
+						}
+					}
+
+					if(j==8){
+						regex = /(<button)/
+						match_keyword = src_code[i].match(regex);
+
+						if (match_keyword != null && match_keyword.index !== undefined) {
+							let end_index=i;
+							for(var k=i;k<src_code.length;k++){		// for finding the closing tag
+								console.log(src_code[k]);
+								if(src_code[k].includes(">")){
+									console.log(k);
+									end_index=k;
+									break;
+								}
+							}
+							if(src_code[i].includes("class =")){	// to get the class
+								var c_i = src_code[i].indexOf("class=");
+								c_i+=7;
+							}
+							for(var k1 = 0;k1<src_code[i].length;k1++){
+								if(src_code[i].charAt(k1)=='"'){
+									for(var k2 = k1+1;k2<src_code[i].length;k2++){
+										if(src_code[i].charAt(k2)=='"'){
+											class_name=src_code[i].substring(k1+1,k2);
+											console.log(class_name);
+											const bar = { p1: class_name, p2: false };
+											let xx = css_file_a(bar).then(undefined,err => {
+												console.log(bar.p2);
+												if(bar.p2 === true){
+													console.log("constrast ratio not matched")
+													const_rat = "violating 1.4.4 2.0AA"
+													// write code to highlight the class name to indicate the italic style usage
+												}
+											});
+											break;
+										}
+									}
+								}
+							}
 							highlight_keyword(
 								src_code,
 								"label",
