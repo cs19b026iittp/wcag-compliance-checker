@@ -14,7 +14,7 @@ let remove_decorations: vscode.DecorationOptions[] = [];
 let decorated: number[] = [];
 
 let a_hover="";
-let const_rat="";
+let button_css="";
 
 const decorationType = vscode.window.createTextEditorDecorationType({
 	// backgroundColor: 'green',
@@ -67,11 +67,11 @@ function alter_code(
 }
 
 function hover(
-	i: number,
-	j: number,
-	k: number,
+	i: any,
+	j: any,
+	k: any,
 	active: vscode.TextEditor,
-	end_tag: number,
+	end_tag: any,
 ): void {
 	vscode.languages.registerHoverProvider('html', {
 		async provideHover(document, position, token) {
@@ -98,9 +98,6 @@ function hover(
 						const selectedText = await vscode.window.showInputBox({
 							placeHolder: "enter y to get alt tag"
 						});
-						console.log("__________________________________________");
-						console.log(selectedText);
-						console.log("__________________________________________");
 						if(selectedText === "y"){
 						flag_hover=1;
 						console.log("changing code");
@@ -158,6 +155,16 @@ function hover(
 						alter_code("html",src_code,end_tag,">",active,a_desc);
 					    }
 					}
+					return	new vscode.Hover(markdown,new vscode.Range(position,position));
+				}
+				else if(word == "button"){
+					const s4 = '<h4>Add Description</h4>'
+					markdown.appendMarkdown(s4);
+					const s5 = '<a href = "https://code.visualstudio.com/api/references/vscode-api#workspace"> anchor <\a>';
+					markdown.appendMarkdown(s5);
+					markdown.appendMarkdown(button_css);
+					markdown.supportHtml=true;
+					markdown.isTrusted=true;
 					return	new vscode.Hover(markdown,new vscode.Range(position,position));
 				}
 				else if(word == "a"){
@@ -659,7 +666,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 
 					if (j == 5) {
-						
 						regex = /(<label)/
 						match_keyword = src_code[i].match(regex)
 						if (match_keyword != null && match_keyword.index !== undefined) {
@@ -672,9 +678,6 @@ export async function activate(context: vscode.ExtensionContext) {
 									break;
 								}
 							}
-							let s1 = src_code[i].substring(
-								match_keyword.index + match_keyword[1].length
-							);
 							highlight_keyword(
 								src_code,
 								"label",
@@ -690,37 +693,28 @@ export async function activate(context: vscode.ExtensionContext) {
 						}
 					}
 
-					if(j==8){
+					if(j==8){		// for button
 						regex = /(<button)/
-						match_keyword = src_code[i].match(regex);
-
+						match_keyword = src_code[i].match(regex)
 						if (match_keyword != null && match_keyword.index !== undefined) {
-							let end_index=i;
-							for(var k=i;k<src_code.length;k++){		// for finding the closing tag
-								console.log(src_code[k]);
-								if(src_code[k].includes(">")){
-									console.log(k);
-									end_index=k;
-									break;
-								}
-							}
+							var b_flag=0;
 							if(src_code[i].includes("class =")){	// to get the class
 								var c_i = src_code[i].indexOf("class=");
 								c_i+=7;
 							}
+							var class_name="";
 							for(var k1 = 0;k1<src_code[i].length;k1++){
 								if(src_code[i].charAt(k1)=='"'){
 									for(var k2 = k1+1;k2<src_code[i].length;k2++){
 										if(src_code[i].charAt(k2)=='"'){
 											class_name=src_code[i].substring(k1+1,k2);
-											console.log(class_name);
 											const bar = { p1: class_name, p2: false };
 											let xx = css_file_a(bar).then(undefined,err => {
 												console.log(bar.p2);
 												if(bar.p2 === true){
-													console.log("constrast ratio not matched")
-													const_rat = "violating 1.4.4 2.0AA"
-													// write code to highlight the class name to indicate the italic style usage
+													console.log("conrast colour")
+													button_css = "violating 1.4.4 2.0AA"
+													b_flag=1;
 												}
 											});
 											break;
@@ -728,18 +722,10 @@ export async function activate(context: vscode.ExtensionContext) {
 									}
 								}
 							}
-							highlight_keyword(
-								src_code,
-								"label",
-								"for",
-								i,
-								end_index,
-								match_keyword.index,
-								match_keyword[1].length,
-								1,
-								decorationsArray,
-								active
-							);
+							if(b_flag==1){
+								hover(i,match_keyword.index,match_keyword[1].length,active,i);
+							}
+							
 						}
 					}
 				}

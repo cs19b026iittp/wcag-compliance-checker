@@ -32,7 +32,7 @@ var util = require('util');
 
         let src_code = result.split('\n');
         console.log(src_code);
-        let bc,c;
+        let bc="",c="";
         for (let i = 0; i < src_code.length; i++) {
                 if (src_code[i].includes(model.p1)) {
                     console.log("_______________________________");
@@ -54,9 +54,21 @@ var util = require('util');
                                 c=c.replace(/\s/g, "");
                             }
 
-                            
                         }
                    }
+                   var c_r=0;
+                //    var bc_val=0;
+                //    var c_var = 0;
+                   var colours = ["red","blue","white","yellow","orange"]
+                   var values = [4,2.21,8,52,8.28,6.04]
+
+                   var contrast_ratio_val = values[colours.indexOf(c)]/values[colours.indexOf(bc)];
+                   if(contrast_ratio_val < 3){
+                       model.p2=true;
+                   }
+               
+
+                
             }
     } 
 }
