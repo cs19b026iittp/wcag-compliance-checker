@@ -4,11 +4,16 @@ import { off } from 'process';
 import { cursorTo } from 'readline';
 import * as vscode from 'vscode';
 import { TSMap } from "typescript-map"
+import * as fs from "fs";
+import {css_file} from './check_css'
+import {css_file_a} from './check_a'
+
 
 let decorationsArray: vscode.DecorationOptions[] = [];
 let remove_decorations: vscode.DecorationOptions[] = [];
 let decorated: number[] = [];
 
+let a_hover="";
 
 const decorationType = vscode.window.createTextEditorDecorationType({
 	// backgroundColor: 'green',
@@ -26,6 +31,40 @@ const rem_decorationType = vscode.window.createTextEditorDecorationType({
 
 let src_code : string[];
 
+function alter_code(
+	tag:string,
+	s:any,
+	end_tag:number,
+	s1:string,
+	active: vscode.TextEditor,
+	desc: any,
+):void{
+	var z:string;
+	var z1 = src_code[end_tag].indexOf(s1)
+	var s1= src_code[end_tag].substring(0,z1);
+	if(tag=="html")
+		z=s1+" lang="+"\""+"\""+">";
+	else if(tag == "input")
+		z=s1+" alt="+"\""+"\""+"/>";
+	else if(tag == "div")
+		z=s1+" aria-label="+"\""+"\""+">"+src_code[end_tag].substring(z1+1);
+	else if(tag == "a")
+		z=s1+src_code[end_tag][z1]+desc+src_code[end_tag].substring(z1+1);
+	else if(tag == "label")
+		z=s1+" for="+"\""+"\""+">"+src_code[end_tag].substring(z1+1);
+	else if(tag == "form")
+		z=s1+" role="+"\""+"\""+">"+src_code[end_tag].substring(z1+1);
+
+	active.edit(editBuilder =>{
+		var line = active.document.lineAt(end_tag);
+		var e=line.range.end.character;
+		var sp = new vscode.Position(end_tag,0);
+		var ep = new vscode.Position(end_tag,e+1);
+		var range = new vscode.Range(sp,ep);
+		editBuilder.replace(range,z);
+		})
+}
+
 function hover(
 	i: number,
 	j: number,
@@ -40,63 +79,31 @@ function hover(
 			const word = document.getText(range);
 
 			console.log(word);
-
-			
-			// let decoration1 = {range1};
-			// if (position.character>=j && position.character<=k && position.line==i)  {
 				var flag_hover = 0;
 				if(position.line==i){
-				if (word == "input") {
 					const markdown = new vscode.MarkdownString('');
-					const markdown1 = new vscode.MarkdownString('');
-					
+				if (word == "input") {
+						
 					// var selectedText;
-					if(! decorated.includes(i)){
-						const s4 = '<h4>enter alt tag</h4>'
-						markdown.appendMarkdown(s4);
-						const s5 = '<a href = "https://code.visualstudio.com/api/references/vscode-api#workspace"> anchor <\a>';
-						markdown.appendMarkdown(s5);
-						markdown.supportHtml=true;
-						markdown.isTrusted=true;
-					const selectedText = await vscode.window.showInputBox();
+					const s4 = '<h4>enter alt tag</h4>'
+					markdown.appendMarkdown(s4);
+					const s5 = '<a href = "https://code.visualstudio.com/api/references/vscode-api#workspace"> anchor <\a>';
+					markdown.appendMarkdown(s5);
+					markdown.supportHtml=true;
+					markdown.isTrusted=true;
 					decorated.push(i);
-					// {
-					// 	placeHolder: "Search query",
-					// 	prompt: "Search my snippets on Codever",
-					// 	value: selectedText
-	  				// }
-	  				// if(searchQuery === ''){
-					// 	console.log(searchQuery);
-					// 	vscode.window.showErrorMessage('A search query is mandatory to execute this action');
-	  				// }
-
-					console.log("__________________________________________");
-					console.log(selectedText);
-					console.log("__________________________________________");
-
-					if(selectedText === "y"){
+					if(! decorated.includes(i)){
+					
+						const selectedText = await vscode.window.showInputBox({
+							placeHolder: "enter y to get alt tag"
+						});
+						console.log("__________________________________________");
+						console.log(selectedText);
+						console.log("__________________________________________");
+						if(selectedText === "y"){
 						flag_hover=1;
 						console.log("changing code");
-						var z:string;
-						var z1 = src_code[end_tag].indexOf("/>")
-						var s1= src_code[end_tag].substring(0,z1);
-
-						z=s1+"   alt="+"\""+"\""+"/>";
-						active.edit(editBuilder =>{
-							var line = active.document.lineAt(end_tag);
-							var e=line.range.end.character;
-							var sp = new vscode.Position(end_tag,0);
-							var ep = new vscode.Position(end_tag,e+1);
-							var range = new vscode.Range(sp,ep);
-							editBuilder.replace(range,z);
-							range = new vscode.Range(new vscode.Position(i, j),new vscode.Position(i, j + k));
-							let d1 = { range };
-							console.log("::::::::::::::::::::::::::::::::::::::::::::::::::");
-							remove_decorations.push(d1);
-							active.setDecorations(rem_decorationType,remove_decorations);
-						})
-
-						
+						alter_code("input",src_code,end_tag,"/>",active,selectedText);
 					}
 					else {
 						console.log("wrong input");
@@ -108,26 +115,68 @@ function hover(
 				}
 				// message to appear for the form tag
 				else if (word == "form") {
-					return {
-						contents: ["Include role"]
+					if(! decorated.includes(i)){
+						decorated.push(i);
+						const a_desc = await vscode.window.showInputBox();
+						if(a_desc === "y"){
+						alter_code("form",src_code,end_tag,">",active,a_desc);
+					    }
 					}
+					return	new vscode.Hover(markdown,new vscode.Range(position,position));
 				}
 				else if (word == "label") {
-					return {
-						contents: ["use for attribute in label tag to represent id attribue in input tag "],
-
+					if(! decorated.includes(i)){
+						decorated.push(i);
+						const a_desc = await vscode.window.showInputBox();
+						if(a_desc === "y"){
+						alter_code("label",src_code,end_tag,">",active,a_desc);
+					    }
 					}
+					return	new vscode.Hover(markdown,new vscode.Range(position,position));
 				}
-				else if (word == "nav") {
-					return {
-						contents: ["attach an aria-label attribute to your navigation to give users of assistive technology as much information as possible"]
+				else if (word == "div") {
+					if(! decorated.includes(i)){
+						decorated.push(i);
+						const a_desc = await vscode.window.showInputBox();
+						if(a_desc === "y"){
+						alter_code("div",src_code,end_tag,">",active,a_desc);
+					    }
 					}
+					return	new vscode.Hover(markdown,new vscode.Range(position,position));
 				}
 				else if (word == "head") {
 					return {
-						contents: ["Using a Title is suggested as it gives better information about the data"]
+						contents: ["Enter title"],
 					}
 				}
+				else if(word == "html"){
+					if(! decorated.includes(i)){
+						decorated.push(i);
+						const a_desc = await vscode.window.showInputBox();
+						if(a_desc === "y"){
+						alter_code("html",src_code,end_tag,">",active,a_desc);
+					    }
+					}
+					return	new vscode.Hover(markdown,new vscode.Range(position,position));
+				}
+				else if(word == "a"){
+					const s4 = '<h4>Add Description</h4>'
+					markdown.appendMarkdown(s4);
+					const s5 = '<a href = "https://code.visualstudio.com/api/references/vscode-api#workspace"> anchor <\a>';
+					markdown.appendMarkdown(s5);
+					markdown.appendMarkdown(a_hover);
+					markdown.supportHtml=true;
+					markdown.isTrusted=true;
+					if(! decorated.includes(i)){
+						decorated.push(i);
+						const a_desc = await vscode.window.showInputBox();
+						if(a_desc !== "undefined"){
+							alter_code("a",src_code,end_tag,">",active,a_desc);
+						}
+					}
+					return	new vscode.Hover(markdown,new vscode.Range(position,position));
+				}
+				
 			}
 			return {
 				contents: [],
@@ -136,6 +185,7 @@ function hover(
 		}
 	}); 
 }
+
 
 
 function highlight_keyword1(
@@ -156,8 +206,12 @@ function highlight_keyword1(
 	  regex1 = /(alt)/;
 	}
 	var flag=0;
+	if(y == "a"){
+		flag=1;
+	}
+	
 	console.log("inside function");
-	for(var a=i;a<=i1;a++) {
+	for(var a=i;a<=i1 && flag==0;a++) {
 		console.log("highlight");
 		let m1 = x[a].match(regex1);
 		if (m1 !== null && m1.index !== undefined) {
@@ -206,14 +260,16 @@ function highlight_keyword(		// for highlighting the keyword
 	else if (y == "html" && z == "lang") {
 		regex1 = /(lang)/
 	} else if (y == "label" && z == "for") {
+			console.log(y);
 		regex1 = /(for)/
 	}
-	else if (y == "nav" && z == "aria-label") {
+	else if (y == "div" && z == "aria-label") {
 		regex1 = /(aria-label)/
 	}
 	var flag=0;
 	for(var a=i;a<=i1;a++) {
 		console.log("highlight");
+		console.log(x[a]);
 		let m1 = x[a].match(regex1);
 		if (m1 !== null && m1.index !== undefined) {
 		  // console.log(src_code[i]);
@@ -222,6 +278,7 @@ function highlight_keyword(		// for highlighting the keyword
 			break;
 		}
 	  }
+	  console.log(flag);
 	if(flag==1){
 		let range = new vscode.Range(
 			new vscode.Position(i, j),
@@ -239,28 +296,43 @@ function highlight_keyword(		// for highlighting the keyword
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
 
+	
+
 	// getting the active text editor
 	const active = vscode.window.activeTextEditor;
+
+	
 
 	// no active editor
 	if (!active)
 		return;
+	console.log(active.document.uri);
+	console.log("-------------------------------------------------------------");
 	console.log('Congratulations, your extension "wcag-ext" is now active!');
 
 	let disposable = vscode.commands.registerCommand('wcag-ext.helloWorld', () => {
+		
 
 		// keywords to check for
-		let keywords = ["<input", "<a", "<form", "<html", "<div", "<label", "<nav", "<head"]
+	//	console.log(":::::::::");
+	//	css_file();
+		// const check_css = new CheckCss();
+		// check_css.method1();
+		console.log(":::::::::");
+		let keywords = ["<input", "<a", "<form", "<html", "<nav", "<label", "<div", "<head"]
 
 		for (var x in keywords) {
 			console.log(keywords[x]);
 		}
 
-
+		// vscode.workspace.onDidChangeTextDocument(function (event){
+		//	decorationsArray.length=0;
 		vscode.workspace.openTextDocument(active.document.uri);  // opening the active document
 
 		// to get the content of the file
 		let result = active.document.getText();
+
+	//	console.log(result);
 
 		let regex;
 		let match_keyword;
@@ -271,6 +343,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		
 
 		// console.log("hii")
+		
 		for (let i = 0; i < src_code.length; i++) {
 			for (let j = 0; j < keywords.length; j++) {
 				if (src_code[i].includes(keywords[j])) {
@@ -343,10 +416,44 @@ export async function activate(context: vscode.ExtensionContext) {
 					}
 					if (j == 1) {
 						// checking the compliance for the anchor tag
+						
 						regex = /(<a)/
 						match_keyword = src_code[i].match(regex);
+
+						
+						
 						// start of anchor tag found
 						if (match_keyword != null && match_keyword.index !== undefined) {
+							if(src_code[i].includes("class =")){	// to get the class
+								var c_i = src_code[i].indexOf("class=");
+								c_i+=7;
+							}
+							var class_name="";
+							for(var k1 = 0;k1<src_code[i].length;k1++){
+								if(src_code[i].charAt(k1)=='"'){
+									for(var k2 = k1+1;k2<src_code[i].length;k2++){
+										if(src_code[i].charAt(k2)=='"'){
+											class_name=src_code[i].substring(k1+1,k2);
+											console.log(":::::::::");
+											console.log(class_name);
+											const bar = { p1: class_name, p2: false };
+											let xx = css_file_a(bar).then(undefined,err => {
+												console.log(bar.p2);
+												if(bar.p2 === true){
+													console.log("italic style is used")
+													a_hover = "violating 1.4.4 2.0AA"
+													// write code to highlight the class name to indicate the italic style usage
+												}
+												else{
+
+												}
+												//console.log("error");
+											});
+											break;
+										}
+									}
+								}
+							}
 							let regex1 = /(a>)/
 							let m2 = src_code[i].match(regex1);
 
@@ -355,13 +462,13 @@ export async function activate(context: vscode.ExtensionContext) {
 								let y = match_keyword.index + match_keyword[1].length
 
 								let s1 = src_code[i].substring(y, x)
-								let regex_a = /(>)/
+								let regex_a = /(>)/	// to get the end of <a href="">
 								let ma = s1.match(regex_a);
 								if (ma != null && ma.index !== undefined) {
 									let z = ma.index
 									s1 = s1.substring(z + 1, x)
 								}
-								console.log(s1)
+								
 								if (s1.length - 2 == 0) {
 									let range = new vscode.Range(
 										new vscode.Position(i, match_keyword.index),
@@ -370,6 +477,24 @@ export async function activate(context: vscode.ExtensionContext) {
 									let decoration = { range }
 
 									decorationsArray.push(decoration)
+
+									highlight_keyword1(
+										src_code,
+										"a",
+										"",
+										i,
+										i,
+										i,
+										match_keyword.index,
+										match_keyword[1].length,
+										1,
+										decorationsArray,
+										active
+									  );
+
+									
+									
+									//hover(i,match_keyword.index,match_keyword[i].length,active,i);		
 								}
 
 							}
@@ -400,7 +525,7 @@ export async function activate(context: vscode.ExtensionContext) {
 							highlight_keyword(
 								src_code,
 								"form",
-								"role=",
+								"role",
 								i,
 								end_index,
 								match_keyword.index,
@@ -411,7 +536,7 @@ export async function activate(context: vscode.ExtensionContext) {
 							);
 
 							highlight_keyword(
-								src_code[i],
+								src_code,
 								"form",
 								"action",
 								i,
@@ -447,7 +572,7 @@ export async function activate(context: vscode.ExtensionContext) {
 								"html",
 								"lang",
 								i,
-								end_index,
+								i,
 								match_keyword.index,
 								match_keyword[1].length,
 								1,
@@ -461,7 +586,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 					if (j == 6) {
 						// checking compliance for the nav tag
-						regex = /(<nav)/
+						regex = /(<div)/
 						match_keyword = src_code[i].match(regex)
 						if (match_keyword != null && match_keyword.index !== undefined) {
 							let end_index=i;
@@ -476,9 +601,11 @@ export async function activate(context: vscode.ExtensionContext) {
 							let s1 = src_code[i].substring(
 								match_keyword.index + match_keyword[1].length
 							);
+
+							
 							highlight_keyword(
-								src_code[i],
-								"nav",
+								src_code,
+								"div",
 								"aria-label",
 								i,
 								end_index,
@@ -547,7 +674,7 @@ export async function activate(context: vscode.ExtensionContext) {
 								match_keyword.index + match_keyword[1].length
 							);
 							highlight_keyword(
-								src_code[i],
+								src_code,
 								"label",
 								"for",
 								i,
@@ -564,10 +691,10 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 
 		}
-
+	
 		active.setDecorations(decorationType, decorationsArray)
 		console.log(result);
-
+	// });
 		vscode.window.showInformationMessage('Hello World from wcag-ext!');
 	});
 
