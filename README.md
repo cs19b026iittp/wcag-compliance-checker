@@ -93,10 +93,36 @@ Over view:-
  ===============================
   If the user runs the vscode extension alongside with his/her html code
   
- The tags  that are not following the compliance are being highlighted using the green coloue
+ The tags  that are not following the compliance are being highlighted using the green colour
+ 
+ On the first time hover over the highlighted tags 
+  The user gets the option to get input from the user
+   input options :
+     For the html tag if the user inputs y he gets lang attribute added to the code [according to the guideline]
+     For the form tag if the user inputs y he gets role attribute added to the code [according to the guideline]
+     For the div tag if the user inputs y he gets aria-label attribute added to the code [according to the guideline]
+     For the html tag if the user inputs y he gets lang attribute added to the code [according to the guideline]
+     For the input tag with type image if the user inputs y he gets alt attribute added to the code [according to the guideline]
+     For the input tag with type text the user inputs y he gets autocomplete attribute added to the code [according to the guideline]
+     For anchor tag user needs to enter the description if he wants. Then the description gets added to the anchor tag [guideline]
+     
+ Based on css anchor and button tags get highlighted if they violate the guidelines [red colour]
+ 
+ For anchor tag we have checked for the font style i.e, it is better to use strong instead of italic.
+ For button tag we have checked for the contrast colour to be atleast 1.5
  
  On hovering over the tags, developer gets to know the attributes he/she can use wrt that particular tag
  
+ 
+ Highlighting
+ 
+ ![Screenshot (290)](https://user-images.githubusercontent.com/74318644/166159750-6c99b666-6793-44e8-b3ad-a8ead0c0ad5e.png)
+ 
+ Taking Input
+ 
+![Screenshot (291)](https://user-images.githubusercontent.com/74318644/166159810-dbc5438a-b8ab-43b9-8216-6f0c3657c662.png)
+
+
  Language Used
  =================================
  Type script
@@ -104,7 +130,7 @@ Over view:-
  Our Team
  ============================
  G Pavan Sahith, M Yethin Chandra Sai, K Pavan Kalyan, V Jaswanth, Gagan Hegde
- cs19b017,cs19b026,cs19b022,cs19b042,cs19b015
+ cs19b017,       cs19b026,              cs19b022,      cs19b042,   cs19b015
  
  Installation process
  =============================
@@ -113,9 +139,12 @@ Over view:-
  debug the code 
  In the new vscode code editor write your code -> ctrl+shift+p to run the extension
  It will highlight the tags that violate the wcag compliance & displays the message on hover over the particular tag.
+ ---------
+ Go to vscode marketplace and search for wcag-ext and install it
+ Open the code in the debug console -> ctrl+shift+p to run the extension.
+ It will highlight the tags that violate the wcag compliance.
  
  Future Implementations
 ============================
-To make the parser effecient
-To add a button so that he can disable the highlight if he doesnt want.
-Modifying code 
+To make the parser effecient.
+To add some more guidelines. 
