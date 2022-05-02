@@ -7,31 +7,44 @@ import { TSMap } from "typescript-map"
 import * as fs from "fs";
 import {css_file} from './check_css'
 import {css_file_a} from './check_a'
+import {css_file_cr} from './contrast_ratio'
 
 
-
-let decorationsArray: vscode.DecorationOptions[] = [];
-let remove_decorations: vscode.DecorationOptions[] = [];
+let decorationsArray: vscode.DecorationOptions[] = []; // array for decorating the tags
 let decorated: number[] = [];
 
 let a_hover="";
+let button_css="";
 
 const decorationType = vscode.window.createTextEditorDecorationType({
 	// backgroundColor: 'green',
 	border: '1px solid green',
 	
 });
+ 
+let src_code : string[]; // source code
 
-const rem_decorationType = vscode.window.createTextEditorDecorationType({
-	border: 'none',
-});
+// function to get class name
 
-
-
-
-
-let src_code : string[];
-
+function get_class_name(
+	src_code:any,
+	i:any
+):string{
+	var class_name = "";
+	for(var k1 = 0;k1<src_code[i].length;k1++){
+		if(src_code[i].charAt(k1)=='"'){
+			for(var k2 = k1+1;k2<src_code[i].length;k2++){
+				if(src_code[i].charAt(k2)=='"'){
+					// getting the class name to check css
+					class_name=src_code[i].substring(k1+1,k2);
+					break;
+				}
+			}
+		}
+	}
+	return class_name;
+}
+// altering the code if the user wants to
 function alter_code(
 	tag:string,
 	s:any,
@@ -43,35 +56,38 @@ function alter_code(
 	var z:string;
 	var z1 = src_code[end_tag].indexOf(s1)
 	var s1= src_code[end_tag].substring(0,z1);
-	if(tag=="html")
+	if(tag=="html")	// adding lang attribute for the html tag
 		z=s1+" lang="+"\""+"\""+">";
 	else if(tag == "input")
 		z=s1+" alt="+"\""+"\""+"/>";
 	else if(tag == "div")
 		z=s1+" aria-label="+"\""+"\""+">"+src_code[end_tag].substring(z1+1);
-	else if(tag == "a")
+	else if(tag == "a")  // adding description for the a tag
 		z=s1+src_code[end_tag][z1]+desc+src_code[end_tag].substring(z1+1);
-	else if(tag == "label")
+	else if(tag == "label")   // adding for attribute for the label tag
 		z=s1+" for="+"\""+"\""+">"+src_code[end_tag].substring(z1+1);
-	else if(tag == "form")
+	else if(tag == "form")  // adding role attribute for the form tag
 		z=s1+" role="+"\""+"\""+">"+src_code[end_tag].substring(z1+1);
 
-	active.edit(editBuilder =>{
+	// for changing the content in the editor
+	active.edit(editBuilder =>{  
 		var line = active.document.lineAt(end_tag);
 		var e=line.range.end.character;
 		var sp = new vscode.Position(end_tag,0);
 		var ep = new vscode.Position(end_tag,e+1);
 		var range = new vscode.Range(sp,ep);
-		editBuilder.replace(range,z);
+		// replacing the line with updated
+		editBuilder.replace(range,z);  
 		})
 }
 
+// for getting the hover message
 function hover(
-	i: number,
-	j: number,
-	k: number,
-	active: vscode.TextEditor,
-	end_tag: number,
+	i: any,
+	j: any,
+	k: any,
+	active: vscode.TextEditor,  // active text editor
+	end_tag: any,
 ): void {
 	vscode.languages.registerHoverProvider('html', {
 		async provideHover(document, position, token) {
@@ -83,52 +99,66 @@ function hover(
 				var flag_hover = 0;
 				if(position.line==i){
 					const markdown = new vscode.MarkdownString('');
+					// hover over on input tag
 				if (word == "input") {
-						
-					// var selectedText;
+					// content to be displayed in the hover message
 					const s4 = '<h4>enter alt tag</h4>'
 					markdown.appendMarkdown(s4);
 					const s5 = '<a href = "https://code.visualstudio.com/api/references/vscode-api#workspace"> anchor <\a>';
 					markdown.appendMarkdown(s5);
 					markdown.supportHtml=true;
 					markdown.isTrusted=true;
-					decorated.push(i);
-					if(! decorated.includes(i)){
 					
+					if(! decorated.includes(i)){
+						decorated.push(i);
+						// getting the input from the user whether he would like to alter code or not
 						const selectedText = await vscode.window.showInputBox({
 							placeHolder: "enter y to get alt tag"
 						});
-						console.log("__________________________________________");
-						console.log(selectedText);
-						console.log("__________________________________________");
+						// if user wants to alter the code
 						if(selectedText === "y"){
 						flag_hover=1;
-						console.log("changing code");
+						// calling the alter code functon 
 						alter_code("input",src_code,end_tag,"/>",active,selectedText);
 					}
 					else {
 						console.log("wrong input");
 					}
 				}
-					
+						// returning the content to be displayed on hover
 						return	new vscode.Hover(markdown,new vscode.Range(position,position));
 					
 				}
-				// message to appear for the form tag
 				else if (word == "form") {
+					const s4 = '<h4>enter role attribute</h4>'
+					markdown.appendMarkdown(s4);
+					markdown.supportHtml=true;
+					markdown.isTrusted=true;
 					if(! decorated.includes(i)){
 						decorated.push(i);
-						const a_desc = await vscode.window.showInputBox();
+						// getting the input from the user
+						const  a_desc = await vscode.window.showInputBox({
+							placeHolder: "enter descrption for the anchor tag"
+						});
+						// if user wants to alter his code
 						if(a_desc === "y"){
-						alter_code("form",src_code,end_tag,">",active,a_desc);
+							alter_code("form",src_code,end_tag,">",active,a_desc);
 					    }
 					}
+					// returning the content to be displayed on hover
 					return	new vscode.Hover(markdown,new vscode.Range(position,position));
 				}
-				else if (word == "label") {
+				else if (word == "label") { // message to appear for the label tag
+					const s4 = '<h4>enter for attribute</h4>'
+					markdown.appendMarkdown(s4);
+					markdown.supportHtml=true;
+					markdown.isTrusted=true;
 					if(! decorated.includes(i)){
 						decorated.push(i);
-						const a_desc = await vscode.window.showInputBox();
+						// getting the user input
+						const a_desc = await vscode.window.showInputBox({
+							placeHolder: "enter y to get role attribute"
+						});
 						if(a_desc === "y"){
 						alter_code("label",src_code,end_tag,">",active,a_desc);
 					    }
@@ -136,40 +166,46 @@ function hover(
 					return	new vscode.Hover(markdown,new vscode.Range(position,position));
 				}
 				else if (word == "div") {
+					const s4 = '<h4>enter for attribute</h4>'
+					markdown.appendMarkdown(s4);
+					markdown.supportHtml=true;
+					markdown.isTrusted=true;
 					if(! decorated.includes(i)){
 						decorated.push(i);
-						const a_desc = await vscode.window.showInputBox();
+						const a_desc = await vscode.window.showInputBox({
+							placeHolder: "enter y to get aria-label attribute"
+						});
 						if(a_desc === "y"){
 						alter_code("div",src_code,end_tag,">",active,a_desc);
 					    }
 					}
 					return	new vscode.Hover(markdown,new vscode.Range(position,position));
 				}
-				else if (word == "head") {
+				else if (word == "head") {  // for the head attribute
 					return {
 						contents: ["Enter title"],
 					}
 				}
-				else if(word == "html"){
+				else if(word == "html"){  // for html tag
+					const s4 = '<h4>enter lang attribute</h4>'
+					markdown.appendMarkdown(s4);
+					markdown.supportHtml=true;
+					markdown.isTrusted=true;
 					if(! decorated.includes(i)){
 						decorated.push(i);
-						const a_desc = await vscode.window.showInputBox();
+						const a_desc = await vscode.window.showInputBox({
+							placeHolder: "enter y to get lang attribute"
+						});
 						if(a_desc === "y"){
 						alter_code("html",src_code,end_tag,">",active,a_desc);
 					    }
 					}
 					return	new vscode.Hover(markdown,new vscode.Range(position,position));
 				}
-				else if(word == "a"){
-					const s4 = '<h4>Add Description</h4>'
-					markdown.appendMarkdown(s4);
-					const s5 = '<a href = "https://code.visualstudio.com/api/references/vscode-api#workspace"> anchor <\a>';
-					markdown.appendMarkdown(s5);
-					markdown.appendMarkdown(a_hover);
-					markdown.supportHtml=true;
-					markdown.isTrusted=true;
+				else if(word == "a"){  // checking for the anchor tag to have description
 					if(! decorated.includes(i)){
 						decorated.push(i);
+						// to get description from the user
 						const a_desc = await vscode.window.showInputBox();
 						if(a_desc !== "undefined"){
 							alter_code("a",src_code,end_tag,">",active,a_desc);
@@ -188,7 +224,7 @@ function hover(
 }
 
 
-
+// for highlighting the 
 function highlight_keyword1(
 	x: any,
 	y: any,
@@ -296,35 +332,17 @@ function highlight_keyword(		// for highlighting the keyword
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
-
-	
-
 	// getting the active text editor
 	const active = vscode.window.activeTextEditor;
-
-	
-
 	// no active editor
 	if (!active)
 		return;
 	console.log(active.document.uri);
-	console.log("-------------------------------------------------------------");
 	console.log('Congratulations, your extension "wcag-ext" is now active!');
 
 	let disposable = vscode.commands.registerCommand('wcag-ext.helloWorld', () => {
-		
-
-		// keywords to check for
-	//	console.log(":::::::::");
-	//	css_file();
-		// const check_css = new CheckCss();
-		// check_css.method1();
-		console.log(":::::::::");
-		let keywords = ["<input", "<a", "<form", "<html", "<nav", "<label", "<div", "<head"]
-
-		for (var x in keywords) {
-			console.log(keywords[x]);
-		}
+		// keywords 
+		let keywords = ["<input", "<a", "<form", "<html", "<nav", "<label", "<div", "<head", "<button"]
 
 		// vscode.workspace.onDidChangeTextDocument(function (event){
 		//	decorationsArray.length=0;
@@ -349,10 +367,10 @@ export async function activate(context: vscode.ExtensionContext) {
 			for (let j = 0; j < keywords.length; j++) {
 				if (src_code[i].includes(keywords[j])) {
 					if(j == 0){
-						
+						// for the input tag
 						regex = /(<input)/
 						match_keyword = src_code[i].match(regex)
-						if(match_keyword !==null && match_keyword.index !== undefined){
+						if(match_keyword !==null && match_keyword.index !== undefined){  // found input
 							let end_index=i;
 							for(var k=i;k<src_code.length;k++){		// for finding the closing tag
 								console.log(src_code[k]);
@@ -362,13 +380,7 @@ export async function activate(context: vscode.ExtensionContext) {
 									break;
 								}
 							}
-							console.log(end_index);
-							let s1 = src_code[i].substring(
-								match_keyword.index + match_keyword[1].length
-							  );
-							  console.log(s1);
-
-							//   var flag1=0;
+							// parsing for the search of type
 							  let type_index = i;
 							  for(k=i;k<=end_index;k++){
 								  if(src_code[k].includes("type=")){
@@ -376,10 +388,17 @@ export async function activate(context: vscode.ExtensionContext) {
 									break;
 								  }
 							  }
-
+							  // for getting the class name
+							  var class_name = get_class_name(src_code,i);	
+							  var a = match_keyword.index;
+							  var b = match_keyword[1].length;	
+								// getting the class name to check css
+								const bar = { p1: class_name, p2: false, p3:a,p4:b,p5:i,p6:j};
+								let xx = css_file_cr(bar);
+							  // image type
 							  for(var a=type_index;a<=end_index;a++){
 								  if(src_code[a].includes("image")){
-									  
+									  // for highlighting the keywords
 									  highlight_keyword1(
 										src_code,
 										"image",
@@ -395,12 +414,12 @@ export async function activate(context: vscode.ExtensionContext) {
 									  );
 									  break;
 								  }
-								  else if(src_code[a].includes("text")){
+								  else if(src_code[a].includes("text")){  // input of type text
 									  
 									highlight_keyword1(
 									  src_code,
 									  "text",
-									  "autocomplete",
+									  "autocomplete", // checking for autocomplete
 									  i,
 									  a,
 									  end_index,
@@ -421,44 +440,36 @@ export async function activate(context: vscode.ExtensionContext) {
 						regex = /(<a)/
 						match_keyword = src_code[i].match(regex);
 
-						
-						
 						// start of anchor tag found
 						if (match_keyword != null && match_keyword.index !== undefined) {
-							if(src_code[i].includes("class =")){	// to get the class
+							if(src_code[i].includes("class=")){	// to get the class
 								var c_i = src_code[i].indexOf("class=");
 								c_i+=7;
 							}
+							var a = match_keyword.index;
+							var b = match_keyword[1].length;
+							// checking for the css adherence
 							var class_name="";
 							for(var k1 = 0;k1<src_code[i].length;k1++){
 								if(src_code[i].charAt(k1)=='"'){
 									for(var k2 = k1+1;k2<src_code[i].length;k2++){
 										if(src_code[i].charAt(k2)=='"'){
+											// getting the class name to check css
 											class_name=src_code[i].substring(k1+1,k2);
-											console.log(":::::::::");
-											console.log(class_name);
-											const bar = { p1: class_name, p2: false };
-											let xx = css_file_a(bar).then(undefined,err => {
-												console.log(bar.p2);
-												if(bar.p2 === true){
-													console.log("italic style is used")
-													a_hover = "violating 1.4.4 2.0AA"
-													// write code to highlight the class name to indicate the italic style usage
-												}
-												else{
-
-												}
-												//console.log("error");
+											const bar = { p1: class_name, p2: false, p3:a,p4:b,p5:i};
+											let xx = css_file_a(bar).then(undefined,err=>{
+												console.log("italic used");
 											});
 											break;
 										}
 									}
 								}
 							}
+							// checking for the description for the anchor tag
 							let regex1 = /(a>)/
 							let m2 = src_code[i].match(regex1);
 
-							if (m2 != null && m2.index !== undefined) {
+							if (m2 != null && m2.index !== undefined) { // found closing a tag
 								let x = m2.index
 								let y = match_keyword.index + match_keyword[1].length
 
@@ -469,16 +480,16 @@ export async function activate(context: vscode.ExtensionContext) {
 									let z = ma.index
 									s1 = s1.substring(z + 1, x)
 								}
-								
+								// no description available for the anchor tag
 								if (s1.length - 2 == 0) {
 									let range = new vscode.Range(
 										new vscode.Position(i, match_keyword.index),
 										new vscode.Position(i, match_keyword.index + match_keyword[1].length)
 									)
 									let decoration = { range }
-
+									// pushing it to the decoration array
 									decorationsArray.push(decoration)
-
+									// highligting the tag
 									highlight_keyword1(
 										src_code,
 										"a",
@@ -492,10 +503,7 @@ export async function activate(context: vscode.ExtensionContext) {
 										decorationsArray,
 										active
 									  );
-
-									
-									
-									//hover(i,match_keyword.index,match_keyword[i].length,active,i);		
+		
 								}
 
 							}
@@ -518,9 +526,6 @@ export async function activate(context: vscode.ExtensionContext) {
 									break;
 								}
 							}
-							let s1 = src_code[i].substring(
-								match_keyword.index + match_keyword[1].length
-							);
 							// checking if the role is included or not
 
 							highlight_keyword(
@@ -565,9 +570,7 @@ export async function activate(context: vscode.ExtensionContext) {
 									break;
 								}
 							}
-							let s1 = src_code[i].substring(
-								match_keyword.index + match_keyword[1].length
-							);
+							// check for lang attribute and hghlight it accordingly
 							highlight_keyword(
 								src_code,
 								"html",
@@ -599,15 +602,10 @@ export async function activate(context: vscode.ExtensionContext) {
 									break;
 								}
 							}
-							let s1 = src_code[i].substring(
-								match_keyword.index + match_keyword[1].length
-							);
-
-							
 							highlight_keyword(
 								src_code,
 								"div",
-								"aria-label",
+								"aria-label", // checking for aria-label
 								i,
 								end_index,
 								match_keyword.index,
@@ -625,7 +623,7 @@ export async function activate(context: vscode.ExtensionContext) {
 						regex = /(<head)/
 						match_keyword = src_code[i].match(regex)
 						if (match_keyword != null && match_keyword.index !== undefined) {
-							let regex1 = /(<title)/
+							let regex1 = /(<title)/ // checking for the title for the page
 							let regex3 = /(head>)/
 							for (let w = i; w < src_code.length; w++) {
 								console.log(w)
@@ -641,12 +639,13 @@ export async function activate(context: vscode.ExtensionContext) {
 										break;
 									}
 									else {
+										// getting the range
 										let range = new vscode.Range(
 											new vscode.Position(i, match_keyword.index),
 											new vscode.Position(i, match_keyword.index + match_keyword[1].length)
 										)
 										let decoration = { range }
-
+										// pushing it to the decorations array
 										decorationsArray.push(decoration)
 									}
 
@@ -655,10 +654,7 @@ export async function activate(context: vscode.ExtensionContext) {
 							}
 						}
 					}
-
-
-
-					if (j == 5) {
+					if (j == 5) {  // for the label tag
 						regex = /(<label)/
 						match_keyword = src_code[i].match(regex)
 						if (match_keyword != null && match_keyword.index !== undefined) {
@@ -671,13 +667,10 @@ export async function activate(context: vscode.ExtensionContext) {
 									break;
 								}
 							}
-							let s1 = src_code[i].substring(
-								match_keyword.index + match_keyword[1].length
-							);
 							highlight_keyword(
 								src_code,
 								"label",
-								"for",
+								"for",  // checking for the for attribute
 								i,
 								end_index,
 								match_keyword.index,
@@ -686,6 +679,36 @@ export async function activate(context: vscode.ExtensionContext) {
 								decorationsArray,
 								active
 							);
+						}
+					}
+
+					if(j==8){		// for button
+						regex = /(<button)/
+						match_keyword = src_code[i].match(regex)
+						if (match_keyword != null && match_keyword.index !== undefined) {
+							var b_flag=0;
+							if(src_code[i].includes("class=")){	// to get the class
+								var c_i = src_code[i].indexOf("class=");
+								c_i+=7;
+							}
+							var a = match_keyword.index;
+							var b = match_keyword[1].length;
+							var class_name="";
+							for(var k1 = 0;k1<src_code[i].length;k1++){
+								if(src_code[i].charAt(k1)=='"'){
+									for(var k2 = k1+1;k2<src_code[i].length;k2++){
+										if(src_code[i].charAt(k2)=='"'){
+											// getting the class name
+											class_name=src_code[i].substring(k1+1,k2);
+											const bar = { p1: class_name, p2: false, p3:a,p4:b,p5:i,p6:j};
+											// highlight and hover if the css doesnt follow r
+											 let xx = css_file_cr(bar);
+										}
+									}
+								}
+								
+							}
+							
 						}
 					}
 				}
