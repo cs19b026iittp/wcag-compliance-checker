@@ -8,6 +8,7 @@ import * as fs from "fs";
 import {css_file} from './check_css'
 import {css_file_a} from './check_a'
 import {css_file_cr} from './contrast_ratio'
+import {css_file_txt} from './check_css_text'
 
 
 let decorationsArray: vscode.DecorationOptions[] = []; // array for decorating the tags
@@ -342,7 +343,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	let disposable = vscode.commands.registerCommand('wcag-ext.helloWorld', () => {
 		// keywords 
-		let keywords = ["<input", "<a", "<form", "<html", "<nav", "<label", "<div", "<head", "<button"]
+		let keywords = ["<input", "<a", "<form", "<html", "<nav", "<label", "<div", "<head", "<button","<p"]
 
 		// vscode.workspace.onDidChangeTextDocument(function (event){
 		//	decorationsArray.length=0;
@@ -708,6 +709,25 @@ export async function activate(context: vscode.ExtensionContext) {
 								}
 								
 							}
+							
+						}
+					}
+
+					if(j==9){		// for text
+						regex = /(<p)/
+						match_keyword = src_code[i].match(regex)
+						if (match_keyword != null && match_keyword.index !== undefined) {  // paragraph type
+							var b_flag=0;
+							if(src_code[i].includes("class=")){	// to get the class
+								var class_name = get_class_name(src_code,i);	
+							  	var a = match_keyword.index;
+							  	var b = match_keyword[1].length;	
+								// getting the class name to check css
+								const bar = { p1: class_name, p2: false, p3:a,p4:b,p5:i,p6:j};
+								console.log("+++++++++++++++++----------___________");
+								let xx = css_file_txt(bar);
+							}
+							
 							
 						}
 					}

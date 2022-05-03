@@ -82,7 +82,7 @@ vscode.languages.registerHoverProvider('html', {
                                 bc = src_code[k].substring(x+1,y1);
                                 bc=bc.replace(/\s/g, "");
                             }
-                            if(src_code[k].includes("color")){
+                            else if(src_code[k].includes("color")){
                                 // getting the colour
                                 var x = src_code[k].indexOf(":");
                                 var y1 = src_code[k].indexOf(";");
