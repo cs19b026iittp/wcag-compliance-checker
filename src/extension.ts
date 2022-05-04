@@ -60,17 +60,17 @@ function alter_code(
 	var z1 = src_code[end_tag].indexOf(s1)
 	var s1= src_code[end_tag].substring(0,z1);
 	if(tag=="html")	// adding lang attribute for the html tag
-		z=s1+" lang="+"\""+"\""+">";
+		z=s1+" lang="+"\""+desc+"\""+">";
 	else if(tag == "input")
-		z=s1+" alt="+"\""+"\""+"/>";
+		z=s1+" alt="+"\""+desc+"\""+"/>";
 	else if(tag == "div")
 		z=s1+" aria-label="+"\""+"\""+">"+src_code[end_tag].substring(z1+1);
 	else if(tag == "a")  // adding description for the a tag
 		z=s1+src_code[end_tag][z1]+desc+src_code[end_tag].substring(z1+1);
 	else if(tag == "label")   // adding for attribute for the label tag
-		z=s1+" for="+"\""+"\""+">"+src_code[end_tag].substring(z1+1);
+		z=s1+" for="+"\""+desc+"\""+">"+src_code[end_tag].substring(z1+1);
 	else if(tag == "form")  // adding role attribute for the form tag
-		z=s1+" role="+"\""+"\""+">"+src_code[end_tag].substring(z1+1);
+		z=s1+" role="+"\""+desc+"\""+">"+src_code[end_tag].substring(z1+1);
 
 	// for changing the content in the editor
 	active.edit(editBuilder =>{  
@@ -116,10 +116,10 @@ function hover(
 						decorated.push(i);
 						// getting the input from the user whether he would like to alter code or not
 						const selectedText = await vscode.window.showInputBox({
-							placeHolder: "enter y to get alt tag"
+							placeHolder: "enter alt tag"
 						});
 						// if user wants to alter the code
-						if(selectedText === "y"){
+						if(selectedText !== "" && selectedText!=undefined){
 						flag_hover=1;
 						// calling the alter code functon 
 						alter_code("input",src_code,end_tag,"/>",active,selectedText);
@@ -144,7 +144,7 @@ function hover(
 							placeHolder: "enter descrption for the anchor tag"
 						});
 						// if user wants to alter his code
-						if(a_desc === "y"){
+						if(a_desc !== "" && a_desc!=undefined){
 							alter_code("form",src_code,end_tag,">",active,a_desc);
 					    }
 					}
@@ -160,9 +160,9 @@ function hover(
 						decorated.push(i);
 						// getting the user input
 						const a_desc = await vscode.window.showInputBox({
-							placeHolder: "enter y to get role attribute"
+							placeHolder: "enter role attribute"
 						});
-						if(a_desc === "y"){
+						if(a_desc !== "" && a_desc!=undefined){
 						alter_code("label",src_code,end_tag,">",active,a_desc);
 					    }
 					}
@@ -176,9 +176,9 @@ function hover(
 					if(! decorated.includes(i)){
 						decorated.push(i);
 						const a_desc = await vscode.window.showInputBox({
-							placeHolder: "enter y to get aria-label attribute"
+							placeHolder: "enter aria-label attribute"
 						});
-						if(a_desc === "y"){
+						if(a_desc !== "" && a_desc!=undefined){
 						alter_code("div",src_code,end_tag,">",active,a_desc);
 					    }
 					}
@@ -192,14 +192,15 @@ function hover(
 				else if(word == "html"){  // for html tag
 					const s4 = '<h4>enter lang attribute</h4>'
 					markdown.appendMarkdown(s4);
+					markdown.appendMarkdown("<p> Guideline 3.1.1 Language of Page</p>");
 					markdown.supportHtml=true;
 					markdown.isTrusted=true;
 					if(! decorated.includes(i)){
 						decorated.push(i);
 						const a_desc = await vscode.window.showInputBox({
-							placeHolder: "enter y to get lang attribute"
+							placeHolder: "enter lang attribute"
 						});
-						if(a_desc === "y"){
+						if(a_desc !== "" && a_desc!=undefined){
 						alter_code("html",src_code,end_tag,">",active,a_desc);
 					    }
 					}
@@ -222,7 +223,7 @@ function hover(
 						// to get description from the user
 						if(desc == 1){
 						const a_desc = await vscode.window.showInputBox();
-						if(a_desc !== "undefined"){
+						if(a_desc!=="" && a_desc != undefined){
 							alter_code("a",src_code,end_tag,">",active,a_desc);
 						}
 						}
@@ -528,7 +529,6 @@ export async function activate(context: vscode.ExtensionContext) {
 									}
 								}
 							}
-							// console.log("]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
 							console.log(aria_labelled_name);
 
 							var aria_contents = aria_labelled_name.split(/(\s+)/);
@@ -798,7 +798,6 @@ export async function activate(context: vscode.ExtensionContext) {
 							  	var b = match_keyword[1].length;	
 								// getting the class name to check css
 								const bar = { p1: class_name, p2: false, p3:a,p4:b,p5:i,p6:j};
-								console.log("+++++++++++++++++----------___________");
 								let xx = css_file_txt(bar);
 							}
 							
