@@ -1,6 +1,4 @@
-# wcag-ext README
 
-This is the README for your extension "wcag-ext". After writing up a brief description, we recommend including the following sections.
 
 ## Features
 
@@ -81,7 +79,7 @@ There is a need to reduce obstacles for all individuals, irrespective of their s
 
 The proposal is to create an extension for a popular IDE which reminds and gives hints to the developer during the web development. 
 
-Over view:-
+Overview:-
 ================================
  Here we tried to develop an vs-code extension that would help the developer to follow the rules by suggesting him at the time he develops the website.
    
