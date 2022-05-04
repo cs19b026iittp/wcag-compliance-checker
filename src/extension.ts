@@ -11,13 +11,15 @@ import {css_file_cr} from './contrast_ratio'
 import {css_file_txt} from './check_css_text'
 
 
-let decorationsArray: vscode.DecorationOptions[] = []; // array for decorating the tags
+
 let decorated: number[] = [];
+let hovered: number[] = [];
 let aria_lab=0;
 let desc=0;
 
 let a_hover="";
 let button_css="";
+let q1=0,q2=0,q3=0,q4=0,q5=0,q6=0,q7=0,q8=0;
 
 const decorationType = vscode.window.createTextEditorDecorationType({
 	// backgroundColor: 'green',
@@ -50,6 +52,7 @@ function get_class_name(
 // altering the code if the user wants to
 function alter_code(
 	tag:string,
+	tag1:string,
 	s:any,
 	end_tag:number,
 	s1:string,
@@ -61,8 +64,14 @@ function alter_code(
 	var s1= src_code[end_tag].substring(0,z1);
 	if(tag=="html")	// adding lang attribute for the html tag
 		z=s1+" lang="+"\""+desc+"\""+">";
-	else if(tag == "input")
-		z=s1+" alt="+"\""+desc+"\""+"/>";
+	else if(tag == "input"){
+		if(tag1=="alt"){
+			z=s1+" alt="+"\""+desc+"\""+"/>";
+		}
+		else if(tag1=="autocomplete"){
+			z=s1+" autocomplete="+"\""+desc+"\""+"/>";
+		}
+	}
 	else if(tag == "div")
 		z=s1+" aria-label="+"\""+"\""+">"+src_code[end_tag].substring(z1+1);
 	else if(tag == "a")  // adding description for the a tag
@@ -89,6 +98,7 @@ function hover(
 	i: any,
 	j: any,
 	k: any,
+	type:string,
 	active: vscode.TextEditor,  // active text editor
 	end_tag: any,
 ): void {
@@ -105,24 +115,35 @@ function hover(
 					// hover over on input tag
 				if (word == "input") {
 					// content to be displayed in the hover message
-					const s4 = '<h4>enter alt tag</h4>'
-					markdown.appendMarkdown(s4);
-					const s5 = '<a href = "https://code.visualstudio.com/api/references/vscode-api#workspace"> anchor <\a>';
-					markdown.appendMarkdown(s5);
+					if(type == "alt"){
+						markdown.appendMarkdown('<h4>enter alt tag</h4>');
+					}
+				    else if(type == "autocomplete"){
+						markdown.appendMarkdown('<h4>enter autocomplete tag</h4>');
+					}
+					markdown.appendMarkdown("<p>Guideline 1.3.5 : Identify input purpose (AA) </p>");
 					markdown.supportHtml=true;
 					markdown.isTrusted=true;
 					
 					if(! decorated.includes(i)){
 						decorated.push(i);
 						// getting the input from the user whether he would like to alter code or not
-						const selectedText = await vscode.window.showInputBox({
+						var selectedText;
+						if(type=="alt"){
+						    selectedText = await vscode.window.showInputBox({
 							placeHolder: "enter alt tag"
 						});
+						}
+						if(type=="autocomplete"){
+							selectedText = await vscode.window.showInputBox({
+							placeHolder: "enter autocomplete tag"
+							});
+						}
 						// if user wants to alter the code
 						if(selectedText !== "" && selectedText!=undefined){
 						flag_hover=1;
 						// calling the alter code functon 
-						alter_code("input",src_code,end_tag,"/>",active,selectedText);
+						alter_code("input",type,src_code,end_tag,"/>",active,selectedText);
 					}
 					else {
 						console.log("wrong input");
@@ -145,7 +166,7 @@ function hover(
 						});
 						// if user wants to alter his code
 						if(a_desc !== "" && a_desc!=undefined){
-							alter_code("form",src_code,end_tag,">",active,a_desc);
+							alter_code("form","",src_code,end_tag,">",active,a_desc);
 					    }
 					}
 					// returning the content to be displayed on hover
@@ -163,7 +184,7 @@ function hover(
 							placeHolder: "enter role attribute"
 						});
 						if(a_desc !== "" && a_desc!=undefined){
-						alter_code("label",src_code,end_tag,">",active,a_desc);
+						alter_code("label","",src_code,end_tag,">",active,a_desc);
 					    }
 					}
 					return	new vscode.Hover(markdown,new vscode.Range(position,position));
@@ -179,7 +200,7 @@ function hover(
 							placeHolder: "enter aria-label attribute"
 						});
 						if(a_desc !== "" && a_desc!=undefined){
-						alter_code("div",src_code,end_tag,">",active,a_desc);
+						alter_code("div","",src_code,end_tag,">",active,a_desc);
 					    }
 					}
 					return	new vscode.Hover(markdown,new vscode.Range(position,position));
@@ -201,7 +222,7 @@ function hover(
 							placeHolder: "enter lang attribute"
 						});
 						if(a_desc !== "" && a_desc!=undefined){
-						alter_code("html",src_code,end_tag,">",active,a_desc);
+						alter_code("html","",src_code,end_tag,">",active,a_desc);
 					    }
 					}
 					return	new vscode.Hover(markdown,new vscode.Range(position,position));
@@ -224,7 +245,7 @@ function hover(
 						if(desc == 1){
 						const a_desc = await vscode.window.showInputBox();
 						if(a_desc!=="" && a_desc != undefined){
-							alter_code("a",src_code,end_tag,">",active,a_desc);
+							alter_code("a","",src_code,end_tag,">",active,a_desc);
 						}
 						}
 					}
@@ -259,6 +280,9 @@ function highlight_keyword1(
 	if (y == "image" && z == "alt") {	// highlight input if alt is not present
 	  regex1 = /(alt)/;
 	}
+	if(y=="text" && z == "autocomplete"){
+		regex1=/(autocomplete)/;
+	}
 	var flag=0;
 	if(y == "a"){
 		flag=1;
@@ -285,7 +309,7 @@ function highlight_keyword1(
 			// decorated_range.push(range);
 		  decorationsArray.push(decoration);  // adding elements to the decoraton array
 		  console.log("go to hover");
-		  hover(t,j,k,active,i1);
+		  hover(t,j,k,z,active,i1);
 	  }
 	}
 
@@ -341,7 +365,7 @@ function highlight_keyword(		// for highlighting the keyword
 		  let decoration = { range };
 			// decorated_range.push(range);
 		  decorationsArray.push(decoration);  // adding elements to the decoraton array
-			hover(i,j,k,active,i1); 
+			hover(i,j,k,"",active,i1); 
 	}
 }
 
@@ -350,14 +374,19 @@ function highlight_keyword(		// for highlighting the keyword
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
 	// getting the active text editor
+	// vscode.workspace.onDidSaveTextDocument((e) => {
+
+	
+	console.log('Congratulations, your extension "wcag-ext" is now active!');
+
+	let disposable = vscode.commands.registerCommand('wcag-ext.helloWorld', () => {
+		vscode.workspace.onDidSaveTextDocument((e) => {
 	const active = vscode.window.activeTextEditor;
 	// no active editor
 	if (!active)
 		return;
+	// vscode.workspace.onDidSaveTextDocument((e) => {
 	console.log(active.document.uri);
-	console.log('Congratulations, your extension "wcag-ext" is now active!');
-
-	let disposable = vscode.commands.registerCommand('wcag-ext.helloWorld', () => {
 		// keywords 
 		let keywords = ["<input", "<a", "<form", "<html", "<nav", "<label", "<div", "<head", "<button","<p"]
 
@@ -380,6 +409,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		// console.log("hii")
 		
+		let decorationsArray: vscode.DecorationOptions[] = []; // array for decorating the tags
 		for (let i = 0; i < src_code.length; i++) {
 			for (let j = 0; j < keywords.length; j++) {
 				if (src_code[i].includes(keywords[j])) {
@@ -814,10 +844,14 @@ export async function activate(context: vscode.ExtensionContext) {
 	// });
 		vscode.window.showInformationMessage('Hello World from wcag-ext!');
 	});
+		 
+	});
 
-	context.subscriptions.push(disposable);
+	// context.subscriptions.push(disposable);
 
 	// for taking input
+//   });
+
 	  
 }
 
