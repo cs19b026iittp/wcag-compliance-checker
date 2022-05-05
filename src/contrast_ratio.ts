@@ -91,6 +91,11 @@ vscode.languages.registerHoverProvider('html', {
                             }
 
                         }
+                        if(flag_cr==1){
+                            break;
+                        }
+                    }
+        }
                         console.log(c);
                         console.log(bc);
                    var c_r=0;
@@ -112,7 +117,5 @@ vscode.languages.registerHoverProvider('html', {
                       hover_button(model.p6);
                    }  
                 
-            }
-    } 
     active.setDecorations(decorationType, decorationsArray);
 }

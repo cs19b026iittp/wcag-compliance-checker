@@ -7,7 +7,7 @@ import { TSMap } from "typescript-map"
 import * as fs from "fs";
 import {css_file} from './check_css'
 import {css_file_a} from './check_a'
-import {css_file_cr} from './contrast_ratio'
+import {css_file_cr} from './contrast_ratio'   
 import {css_file_txt} from './check_css_text'
 
 
@@ -19,7 +19,9 @@ let desc=0;
 
 let a_hover="";
 let button_css="";
-let q1=0,q2=0,q3=0,q4=0,q5=0,q6=0,q7=0,q8=0;
+let inp: number[] = [];
+
+
 
 const decorationType = vscode.window.createTextEditorDecorationType({
 	// backgroundColor: 'green',
@@ -36,7 +38,12 @@ function get_class_name(
 	i:any
 ):string{
 	var class_name = "";
-	for(var k1 = 0;k1<src_code[i].length;k1++){
+	var c_i=0;
+	if(src_code[i].includes("class=")){	// to get the class
+		c_i = src_code[i].indexOf("class=");
+		c_i+=7;
+	
+	for(var k1 = c_i;k1<src_code[i].length;k1++){
 		if(src_code[i].charAt(k1)=='"'){
 			for(var k2 = k1+1;k2<src_code[i].length;k2++){
 				if(src_code[i].charAt(k2)=='"'){
@@ -47,6 +54,7 @@ function get_class_name(
 			}
 		}
 	}
+}
 	return class_name;
 }
 // altering the code if the user wants to
@@ -111,7 +119,7 @@ function hover(
 			console.log(word);
 				var flag_hover = 0;
 				if(position.line==i){
-					const markdown = new vscode.MarkdownString('');
+					var markdown = new vscode.MarkdownString('');
 					// hover over on input tag
 				if (word == "input") {
 					// content to be displayed in the hover message
@@ -249,9 +257,11 @@ function hover(
 						}
 						}
 					}
-					return	new vscode.Hover(markdown,new vscode.Range(position,position));
-				}
-				
+					return	new vscode.Hover({
+							value:markdown.value,
+							language: "html",	
+						});
+					}
 			}
 			return {
 				contents: [],
@@ -436,12 +446,17 @@ export async function activate(context: vscode.ExtensionContext) {
 								  }
 							  }
 							  // for getting the class name
-							  var class_name = get_class_name(src_code,i);	
+							  
+							  var class_name = get_class_name(src_code,i);
+							  console.log("==============================");
+							  console.log(class_name);
+							  if(class_name != ""){	
 							  var a = match_keyword.index;
 							  var b = match_keyword[1].length;	
 								// getting the class name to check css
 								const bar = { p1: class_name, p2: false, p3:a,p4:b,p5:i,p6:j};
 								let xx = css_file_cr(bar);
+							  }
 							  // image type
 							  for(var a=type_index;a<=end_index;a++){
 								  if(src_code[a].includes("image")){
@@ -490,15 +505,16 @@ export async function activate(context: vscode.ExtensionContext) {
 
 						// start of anchor tag found
 						if (match_keyword != null && match_keyword.index !== undefined) {
+							var c_i=0;
 							if(src_code[i].includes("class=")){	// to get the class
-								var c_i = src_code[i].indexOf("class=");
+								c_i = src_code[i].indexOf("class=");
 								c_i+=7;
 							}
 							var a = match_keyword.index;
 							var b = match_keyword[1].length;
 							// checking for the css adherence
 							var class_name="";
-							for(var k1 = 0;k1<src_code[i].length;k1++){
+							for(var k1 = c_i;k1<src_code[i].length;k1++){
 								if(src_code[i].charAt(k1)=='"'){
 									for(var k2 = k1+1;k2<src_code[i].length;k2++){
 										if(src_code[i].charAt(k2)=='"'){
@@ -795,7 +811,7 @@ export async function activate(context: vscode.ExtensionContext) {
 							if(src_code[i].includes("class=")){	// to get the class
 								var c_i = src_code[i].indexOf("class=");
 								c_i+=7;
-							}
+							
 							var a = match_keyword.index;
 							var b = match_keyword[1].length;
 							var class_name="";
@@ -813,7 +829,7 @@ export async function activate(context: vscode.ExtensionContext) {
 								}
 								
 							}
-							
+						}							
 						}
 					}
 
@@ -847,7 +863,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		 
 	});
 
-	// context.subscriptions.push(disposable);
+	context.subscriptions.push(disposable);
 
 	// for taking input
 //   });

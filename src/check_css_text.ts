@@ -5,36 +5,52 @@ var util = require('util');
 
 let decorationsArray: vscode.DecorationOptions[] = [];
 
+let hb1:number,hb2:number;
 // for decorating the button tags which donot follow the guidelines
 const decorationType = vscode.window.createTextEditorDecorationType({
 	border: '1px solid red',
 	
 });
 
-function hover_button(x:any,y:any):void{   // displaying the content on hover
+function hover_button():void{   // displaying the content on hover
 vscode.languages.registerHoverProvider('html', {
     async provideHover(document, position, token) {
+        var x=hb1,y=hb2;
         const range = document.getWordRangeAtPosition(position);
 		const word = document.getText(range);
         const markdown = new vscode.MarkdownString('');
         
-        const s4 = '<h4>Keep suitable contrast ratio</h4>'
-        markdown.appendMarkdown(s4);
-        //markdown.appendMarkdown("chnage the colours such that contrast ration is >=3 for clear visibility");
-        markdown.appendMarkdown("violating 1.4.3 contrast(minimum)          "); 
+         
         if(word == "p" && y==1){ // for contrast ratio 4.5
+            const s4 = '<h4>Keep suitable contrast ratio</h4>'
+        markdown.appendMarkdown(s4);
+        console.log("markdown = ", markdown)
+        //markdown.appendMarkdown("chnage the colours such that contrast ration is >=3 for clear visibility");
+        markdown.appendMarkdown("violating 1.4.3 contrast(minimum)          ");
             markdown.appendMarkdown("text");
             markdown.appendMarkdown("change the colours such that contrast ration is >=4.5 for clear visibility");
 		    markdown.supportHtml=true;
 		    markdown.isTrusted=true;
-		    return	new vscode.Hover(markdown,new vscode.Range(position,position));
+		    // return	{
+            //     value: markdown.value,
+            //     language: 'html'
+            // };
+            return	new vscode.Hover(markdown,new vscode.Range(position,position));
         }
         else if(word == "p" && y==2){// for contrast ratio 3
+            const s4 = '<h4>Keep suitable contrast ratio</h4>'
+        markdown.appendMarkdown(s4);
+        //markdown.appendMarkdown("chnage the colours such that contrast ration is >=3 for clear visibility");
+        markdown.appendMarkdown("violating 1.4.3 contrast(minimum)          ");
             markdown.appendMarkdown("text");
             markdown.appendMarkdown("chnage the colours such that contrast ration is >=3 for clear visibility");
             markdown.supportHtml=true;
 		    markdown.isTrusted=true;
-		    return	new vscode.Hover(markdown,new vscode.Range(position,position));
+		    // return	new vscode.Hover({
+            //         value: "poorna",
+            //         language: 'html'
+            //     });
+            return	new vscode.Hover(markdown,new vscode.Range(position,position));
         }
     }
 });
@@ -42,6 +58,7 @@ vscode.languages.registerHoverProvider('html', {
 
     // for checking css related to text
    export async function  css_file_txt(model : {p1:string;p2:boolean,p3:any,p4:any,p5:any,p6:any}){
+       hover_button();
       const active = vscode.window.activeTextEditor;
       if (!active)
 		return false;
@@ -114,6 +131,11 @@ vscode.languages.registerHoverProvider('html', {
                                 //console.log(c);
                             }
                         }
+                        if(flag_cr==1){
+                            break;
+                        }
+                    }
+        }
                         var bold_type=0; // for is_bold type
                         if(fs==""){
                             fs="0";
@@ -141,7 +163,8 @@ vscode.languages.registerHoverProvider('html', {
                         );
                        let decoration = { range };
                        decorationsArray.push(decoration); 
-                       hover_button(model.p6,1);
+                       hb1=model.p6,hb2=1;
+                    //    hover_button(model.p6,1);
                     }  
                     }
                     
@@ -157,11 +180,10 @@ vscode.languages.registerHoverProvider('html', {
                         );
                        let decoration = { range };
                        decorationsArray.push(decoration); 
-                       hover_button(model.p6,2);
+                       hb1=model.p6,hb2=2;
+                    //    hover_button(model.p6,2);
                     }  
                     }
-                
-            }
-    } 
+                 
     active.setDecorations(decorationType, decorationsArray);
 }
