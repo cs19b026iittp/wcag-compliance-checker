@@ -1,72 +1,3 @@
-
-
-## Features
-
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
-
 ===========================================================================================================================================================
 # W-Confirm  (VS-Code Extension)
 
@@ -75,42 +6,54 @@ Thought
 
 There is a need to reduce obstacles for all individuals, irrespective of their shortcomings, to access content on the web. 
 
-. Web Content Accessibility Guidelines (WCAG) is developed through the W3C process in cooperation with individuals and organizations around the world, with a goal of providing a single shared standard for web content accessibility that meets the needs of individuals, organizations, and governments internationally.
+. Web Content Accessibility Guidelines (WCAG) is developed through the W3C process in cooperation with individuals and organisations around the world to provide a single shared standard for web content accessibility that meets the needs of individuals, organisations, and governments internationally.
 
-The proposal is to create an extension for a popular IDE which reminds and gives hints to the developer during the web development. 
+The proposal is to create an extension for a popular IDE which reminds and gives hints to the developer during the development phase of the website. 
+
 
 Overview:-
 ================================
- Here we tried to develop an vs-code extension that would help the developer to follow the rules by suggesting him at the time he develops the website.
+ Here we tried to developan vs-code extension that would help the developer to follow the rules based on wcag 2.1 by suggestingto  him at the time he develops the website.
    
  This extension helps the developer by suggesting the necessary attributes to a tag that would make the website wcag compliant.
   
   
-  
  Working Procedure
  ===============================
-  If the user runs the vscode extension alongside with his/her html code
+  If the user runs thevs codee extension alongside his/herHTMLl code andCSSs file
   
- The tags  that are not following the compliance are being highlighted using the green colour
+ The tag  that are not following the compliance are being highlighted using the green colour.
+ The tags thatdoesn'tt follow the rules according to theCSSs styling are highlighted in re, which implies that the corresponding classhasg someissuee as shown in the hover message related tothe CSSs used.
  
- On the first time hover over the highlighted tags 
-  The user gets the option to get input from the user
+ Thiss completelydepends onn the developer, as the way each developer wants to createa  website is different
+ The user gets the option to get input from the use  the first time hover over the highlighted tags
    input options :
-     For the html tag if the user inputs y he gets lang attribute added to the code [according to the guideline]
-     For the form tag if the user inputs y he gets role attribute added to the code [according to the guideline]
+    The inputis takene for the first time of hover on the highlghted tags.
+     For the html tag if the user inputs language he gets lang attribute added to the code {according to the guideline 3.1.1 Language of page (A)}
+     For the form tag if the user inputs role he gets role attribute added to the code [according to the guideline 1.3.1 info and relationships]
      For the div tag if the user inputs y he gets aria-label attribute added to the code [according to the guideline]
-     For the html tag if the user inputs y he gets lang attribute added to the code [according to the guideline]
-     For the input tag with type image if the user inputs y he gets alt attribute added to the code [according to the guideline]
-     For the input tag with type text the user inputs y he gets autocomplete attribute added to the code [according to the guideline]
-     For anchor tag user needs to enter the description if he wants. Then the description gets added to the anchor tag [guideline]
+     For the html tag if the user inputs language he gets lang attribute added to the code [according to the guideline]
+     For the input tag with type image if the user inputs alt he gets alt attribute added to the code [according to the guideline  1.3.5 input purpose]
+     For the input tag with type text the user inputs autocomplete he gets autocomplete attribute added to the code [according to the guideline 1.3.5 input purpose]
+     For anchor tag user needs to enter the description if he wants. Then the description gets added to the anchor tag [guideline 2.4.4 Link Purpose]
      
- Based on css anchor and button tags get highlighted if they violate the guidelines [red colour]
+ Based onCSSs anchor and button tags get highlighted if they violate the guidelines [red colour]
  
- For anchor tag we have checked for the font style i.e, it is better to use strong instead of italic.
- For button tag we have checked for the contrast colour to be atleast 1.5
+ Forthe  anchor tag we have checked for the font stylei.e.e, it is better to use strong instead of italic.
+ Forthe  button tag we have checked for the contrast colour to beat leastt 1.5.
+  We check the contrast ratio for the input. { The contrast ration is for clear visibility }
+ We check forthe guidelinese Label in Name {With the arialabelledbyy attribute, authors can use a visible text element on the page as a label for a focusable element (a   form control or a link}  
+  
  
- On hovering over the tags, developer gets to know the attributes he/she can use wrt that particular tag
+ On hovering over the tags  ,the  developer gets toknow theeattributes theye can use wrt that particular tag
  
+ 
+ The architecture of the Project
+ ================================================
+ ![WhatsApp Image 2022-05-05 at 2 11 47 PM](https://user-images.githubusercontent.com/74318644/167257844-a94349b4-9e2e-4489-973b-bf0ab911bddc.jpeg)
+ 
+ Working
+ ================================================
  
  Highlighting
  
@@ -123,7 +66,7 @@ Overview:-
 
  Language Used
  =================================
- Type script
+ Typescriptt
  
  Our Team
  ============================
@@ -144,5 +87,4 @@ Overview:-
  
  Future Implementations
 ============================
-To make the parser effecient.
 To add some more guidelines. 
